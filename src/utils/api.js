@@ -108,6 +108,12 @@ export const endpoints = {
   dashboard: {
     stats: '/dashboard/stats',
   },
+  
+  // Contact settings endpoints
+  contactSettings: {
+    get: '/contact-settings',
+    update: '/contact-settings',
+  },
 };
 
 // API methods
@@ -197,6 +203,11 @@ export const bannersAPI = {
 
 export const dashboardAPI = {
   getStats: () => api.get(endpoints.dashboard.stats),
+};
+
+export const contactSettingsAPI = {
+  get: () => api.get(endpoints.contactSettings.get),
+  update: (data) => api.put(endpoints.contactSettings.update, data),
 };
 
 export default api;

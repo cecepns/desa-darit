@@ -6,7 +6,8 @@ import {
   BarChart3, 
   ShoppingBag, 
   X,
-  LogOut 
+  LogOut,
+  Phone
 } from 'lucide-react';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -19,6 +20,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: 'Profil Desa', href: '/admin/profil', icon: User },
     { name: 'Infografis', href: '/admin/infografis', icon: BarChart3 },
     { name: 'Toko', href: '/admin/toko', icon: ShoppingBag },
+    { name: 'Kontak & Media Sosial', href: '/admin/kontak', icon: Phone },
   ];
 
   const isActive = (path) => {

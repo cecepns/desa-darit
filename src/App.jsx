@@ -25,6 +25,7 @@ import AdminShopPage from './pages/admin/AdminShopPage';
 import AdminShopForm from './pages/admin/AdminShopForm';
 import AdminBannerPage from './pages/admin/AdminBannerPage';
 import AdminBannerForm from './pages/admin/AdminBannerForm';
+import AdminContactSettingsPage from './pages/admin/AdminContactSettingsPage';
 
 // Protected Route Component
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -70,6 +71,7 @@ function App() {
           <Route path="banner" element={<AdminBannerPage />} />
           <Route path="banner/tambah" element={<AdminBannerForm />} />
           <Route path="banner/edit/:id" element={<AdminBannerForm />} />
+          <Route path="kontak" element={<AdminContactSettingsPage />} />
           {/* Organization routes reuse AdminProfilePage section, so no separate pages needed */}
         </Route>
 

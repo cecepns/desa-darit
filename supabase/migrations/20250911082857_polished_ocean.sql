@@ -255,6 +255,60 @@ END//
 DELIMITER ;
 
 -- ===============================
+-- ORGANIZATION MEMBERS TABLE
+-- ===============================
+CREATE TABLE IF NOT EXISTS organization_members (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    position VARCHAR(255) NOT NULL,
+    image VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- ===============================
+-- BANNERS TABLE
+-- ===============================
+CREATE TABLE IF NOT EXISTS banners (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NULL,
+    link VARCHAR(512) NULL,
+    image VARCHAR(255) NULL,
+    status ENUM('active','inactive') DEFAULT 'active',
+    sort_order INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- ===============================
+-- CONTACT SETTINGS TABLE
+-- ===============================
+CREATE TABLE IF NOT EXISTS contact_settings (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    address TEXT,
+    phone VARCHAR(50),
+    email VARCHAR(100),
+    facebook_url VARCHAR(255),
+    instagram_url VARCHAR(255),
+    youtube_url VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- Insert default contact settings
+INSERT INTO contact_settings (
+    address, phone, email, facebook_url, instagram_url, youtube_url
+) VALUES (
+    'Desa Darit, Kec. Menyuke\nKab. Landak, Kalimantan Barat\nIndonesia',
+    '+62 123 4567 8900',
+    'info@desadarit.id',
+    '',
+    '',
+    ''
+);
+
+-- ===============================
 -- SAMPLE DATA COMPLETION
 -- ===============================
 

@@ -1,8 +1,32 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { contactSettingsAPI } from '../../utils/api';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const [contactSettings, setContactSettings] = useState({
+    address: 'Desa Darit, Kec. Menyuke\nKab. Landak, Kalimantan Barat\nIndonesia',
+    phone: '+62 123 4567 8900',
+    email: 'info@desadarit.id',
+    facebook_url: '',
+    instagram_url: '',
+    youtube_url: ''
+  });
+
+  useEffect(() => {
+    const fetchContactSettings = async () => {
+      try {
+        const response = await contactSettingsAPI.get();
+        setContactSettings(response.data);
+      } catch (error) {
+        console.error('Failed to fetch contact settings:', error);
+        // Keep default values if API fails
+      }
+    };
+
+    fetchContactSettings();
+  }, []);
 
   return (
     <footer className="bg-gray-900 text-white">
@@ -11,9 +35,6 @@ const Footer = () => {
           {/* Desa Info */}
           <div className="col-span-1 lg:col-span-2">
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-12 h-12 bg-primary-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-2xl">D</span>
-              </div>
               <div>
                 <h3 className="text-xl font-bold">Desa Darit</h3>
                 <p className="text-gray-300">Kec. Menyuke, Kab. Landak</p>
@@ -25,15 +46,36 @@ const Footer = () => {
               untuk memberikan pelayanan terbaik kepada masyarakat.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-primary-400 transition-colors duration-200">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-primary-400 transition-colors duration-200">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-primary-400 transition-colors duration-200">
-                <Youtube size={20} />
-              </a>
+              {contactSettings.facebook_url && (
+                <a 
+                  href={contactSettings.facebook_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-primary-400 transition-colors duration-200"
+                >
+                  <Facebook size={20} />
+                </a>
+              )}
+              {contactSettings.instagram_url && (
+                <a 
+                  href={contactSettings.instagram_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-primary-400 transition-colors duration-200"
+                >
+                  <Instagram size={20} />
+                </a>
+              )}
+              {contactSettings.youtube_url && (
+                <a 
+                  href={contactSettings.youtube_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-primary-400 transition-colors duration-200"
+                >
+                  <Youtube size={20} />
+                </a>
+              )}
             </div>
           </div>
 
@@ -76,18 +118,21 @@ const Footer = () => {
               <div className="flex items-start space-x-3">
                 <MapPin size={18} className="text-primary-400 mt-1 flex-shrink-0" />
                 <p className="text-gray-300 text-sm">
-                  Desa Darit, Kec. Menyuke<br />
-                  Kab. Landak, Kalimantan Barat<br />
-                  Indonesia
+                  {contactSettings.address ? contactSettings.address.split('\n').map((line, index) => (
+                    <span key={index}>
+                      {line}
+                      {index < contactSettings.address.split('\n').length - 1 && <br />}
+                    </span>
+                  )) : "Alamat belum diisi"}
                 </p>
               </div>
               <div className="flex items-center space-x-3">
                 <Phone size={18} className="text-primary-400 flex-shrink-0" />
-                <p className="text-gray-300 text-sm">+62 123 4567 8900</p>
+                <p className="text-gray-300 text-sm">{contactSettings.phone || "Nomor telepon belum diisi"}</p>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail size={18} className="text-primary-400 flex-shrink-0" />
-                <p className="text-gray-300 text-sm">info@desadarit.id</p>
+                <p className="text-gray-300 text-sm">{contactSettings.email || "Email belum diisi"}</p>
               </div>
             </div>
           </div>

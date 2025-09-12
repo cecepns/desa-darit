@@ -55,6 +55,19 @@ const initDB = async () => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    // Contact settings table
+    await db.execute(`CREATE TABLE IF NOT EXISTS contact_settings (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      address TEXT NULL,
+      phone VARCHAR(50) NULL,
+      email VARCHAR(100) NULL,
+      facebook_url VARCHAR(255) NULL,
+      instagram_url VARCHAR(255) NULL,
+      youtube_url VARCHAR(255) NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
   } catch (error) {
     console.error('Database connection failed:', error);
     process.exit(1);
@@ -1007,6 +1020,71 @@ app.post('/api/banners/upload', authenticateToken, upload.single('image'), (req,
     res.json({ message: 'Image uploaded successfully', filename: req.file.filename, url: `/uploads/${req.file.filename}` });
   } catch (error) {
     handleDBError(error, res, 'Failed to upload image');
+  }
+});
+
+// ===============================
+// CONTACT SETTINGS ROUTES
+// ===============================
+
+// Get contact settings (public)
+app.get('/api/contact-settings', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM contact_settings LIMIT 1');
+    
+    if (rows.length === 0) {
+      // Return default contact settings if none exists
+      return res.json({
+        id: null,
+        address: 'Desa Darit, Kec. Menyuke\nKab. Landak, Kalimantan Barat\nIndonesia',
+        phone: '+62 123 4567 8900',
+        email: 'info@desadarit.id',
+        facebook_url: '',
+        instagram_url: '',
+        youtube_url: ''
+      });
+    }
+
+    res.json(rows[0]);
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get contact settings');
+  }
+});
+
+// Update contact settings
+app.put('/api/contact-settings', authenticateToken, async (req, res) => {
+  try {
+    const {
+      address, phone, email, facebook_url, instagram_url, youtube_url
+    } = req.body;
+
+    // Check if settings exist
+    const [existingRows] = await db.execute('SELECT id FROM contact_settings LIMIT 1');
+    
+    if (existingRows.length === 0) {
+      // Insert new settings
+      const [result] = await db.execute(
+        `INSERT INTO contact_settings 
+        (address, phone, email, facebook_url, instagram_url, youtube_url) 
+        VALUES (?, ?, ?, ?, ?, ?)`,
+        [address, phone, email, facebook_url, instagram_url, youtube_url]
+      );
+      
+      res.json({ message: 'Contact settings created successfully', id: result.insertId });
+    } else {
+      // Update existing settings
+      await db.execute(
+        `UPDATE contact_settings SET 
+        address = ?, phone = ?, email = ?, facebook_url = ?, 
+        instagram_url = ?, youtube_url = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?`,
+        [address, phone, email, facebook_url, instagram_url, youtube_url, existingRows[0].id]
+      );
+      
+      res.json({ message: 'Contact settings updated successfully' });
+    }
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update contact settings');
   }
 });
 
