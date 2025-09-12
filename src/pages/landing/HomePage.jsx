@@ -323,7 +323,7 @@ const HomePage = () => {
                       </div>
                     )}
                   </div>
-                  <div className="bg-primary-600 p-4 h-24 md:h-full flex flex-col items-center justify-center">
+                  <div className="bg-primary-600 p-4 h-24 md:h-auto flex flex-col items-center justify-center">
                     <h4 className="text-sm md:text-xl font-semibold text-white font-bold text-center line-clamp-1 mb-2">
                       {m.name}
                     </h4>
