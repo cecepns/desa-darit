@@ -1,0 +1,30 @@
+/* ReactQuill Custom Styles */
+.ql-editor {
+  min-height: 100px;
+  font-size: 14px;
+}
+
+.ql-container {
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.ql-toolbar {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #9ca3af;
+}
+
+/* Ensure proper spacing */
+.ql-editor p {
+  margin: 0;
+  padding: 0;
+}
+
+.ql-editor p + p {
+  margin-top: 0.5rem;
+}
