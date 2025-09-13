@@ -72,7 +72,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="pt-28 lg:pt-20">
+    <div className="pt-20 lg:pt-20">
       {/* Banner Section using Swiper */}
       <section className="relative overflow-hidden">
         {banners.length > 0 ? (

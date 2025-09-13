@@ -23,8 +23,8 @@ const Header = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <img src={Logo} className="w-20 h-auto" />
-            <div className="hidden sm:block">
+            <img src={Logo} className="w-14 md:w-20 h-auto" />
+            <div className="">
               <h1 className="text-xl font-bold text-white drop-shadow-lg">Desa Darit</h1>
               <p className="text-xs text-white/80">Kec. Menyuke, Kab. Landak</p>
             </div>
