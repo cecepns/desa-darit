@@ -15,16 +15,16 @@ import { Users, Home, Venus, Mars } from 'lucide-react';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-function StatCard({ label, value, icon }) {
+function StatCard({ label, value, icon, gradientClass = "orange-accent-gradient" }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4" data-aos="fade-up">
-      <div className="flex items-start gap-3">
-        <div className="shrink-0 w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center">
+    <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up">
+      <div className="flex items-center gap-4">
+        <div className={`shrink-0 w-12 h-12 rounded-lg ${gradientClass} flex items-center justify-center shadow-lg`}>
           {icon}
         </div>
         <div>
-          <div className="text-gray-500 text-sm">{label}</div>
-          <div className="text-2xl font-semibold mt-1">{value}</div>
+          <div className="text-gray-600 text-sm font-medium">{label}</div>
+          <div className="text-2xl font-bold text-gray-900 mt-1">{value}</div>
         </div>
       </div>
     </div>
@@ -35,6 +35,7 @@ StatCard.propTypes = {
   label: PropTypes.string.isRequired,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   icon: PropTypes.node,
+  gradientClass: PropTypes.string,
 };
 
 export default function InfographicsPage() {
@@ -120,78 +121,103 @@ export default function InfographicsPage() {
           <StatCard
             label="Jumlah Penduduk"
             value={data.total_population}
-            icon={<Users className="w-5 h-5" />}
+            icon={<Users className="w-6 h-6 text-white" />}
+            gradientClass="orange-accent-gradient"
           />
           <StatCard
             label="Kepala Keluarga"
             value={data.total_families}
-            icon={<Home className="w-5 h-5" />}
+            icon={<Home className="w-6 h-6 text-white" />}
+            gradientClass="bg-gradient-to-br from-amber-500 to-orange-500"
           />
           <StatCard
             label="Laki-laki"
             value={data.male_population}
-            icon={<Mars className="w-5 h-5" />}
+            icon={<Mars className="w-6 h-6 text-white" />}
+            gradientClass="bg-gradient-to-br from-blue-600 to-blue-500"
           />
           <StatCard
             label="Perempuan"
             value={data.female_population}
-            icon={<Venus className="w-5 h-5" />}
+            icon={<Venus className="w-6 h-6 text-white" />}
+            gradientClass="bg-gradient-to-br from-pink-600 to-pink-500"
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-lg shadow p-4" data-aos="fade-up">
-            <h2 className="font-semibold mb-3">Kelompok Umur</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Kelompok Umur</h2>
             <div className="h-56 mb-4">
               <Bar data={makeBarData('Kelompok Umur', data.age_groups)} options={commonOptions} />
             </div>
-            <ul className="space-y-1 text-sm">
+            <ul className="space-y-2 text-sm">
               {data.age_groups && Object.entries(data.age_groups).map(([k, v]) => (
-                <li key={k} className="flex justify-between border-b py-1"><span>{k}</span><span className="font-medium">{v}</span></li>
+                <li key={k} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium text-gray-700">{k}</span>
+                  <span className="font-bold text-primary-600">{v}</span>
+                </li>
               ))}
             </ul>
           </div>
-          <div className="bg-white rounded-lg shadow p-4" data-aos="fade-up">
-            <h2 className="font-semibold mb-3">Pendidikan</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Pendidikan</h2>
             <div className="h-56 mb-4">
               <Bar data={makeBarData('Pendidikan', data.education_levels)} options={commonOptions} />
             </div>
-            <ul className="space-y-1 text-sm">
+            <ul className="space-y-2 text-sm">
               {data.education_levels && Object.entries(data.education_levels).map(([k, v]) => (
-                <li key={k} className="flex justify-between border-b py-1"><span>{k}</span><span className="font-medium">{v}</span></li>
+                <li key={k} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium text-gray-700">{k}</span>
+                  <span className="font-bold text-primary-600">{v}</span>
+                </li>
               ))}
             </ul>
           </div>
-          <div className="bg-white rounded-lg shadow p-4" data-aos="fade-up">
-            <h2 className="font-semibold mb-3">Pekerjaan</h2>
+          <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Pekerjaan</h2>
             <div className="h-56 mb-4">
               <Bar data={makeBarData('Pekerjaan', data.occupations)} options={commonOptions} />
             </div>
-            <ul className="space-y-1 text-sm">
+            <ul className="space-y-2 text-sm">
               {data.occupations && Object.entries(data.occupations).map(([k, v]) => (
-                <li key={k} className="flex justify-between border-b py-1"><span>{k}</span><span className="font-medium">{v}</span></li>
+                <li key={k} className="flex justify-between items-center py-2 px-3 bg-gray-50 rounded-lg">
+                  <span className="font-medium text-gray-700">{k}</span>
+                  <span className="font-bold text-primary-600">{v}</span>
+                </li>
               ))}
             </ul>
           </div>
-          <div className="bg-white rounded-lg shadow p-4" data-aos="fade-up">
-            <h2 className="font-semibold mb-3">Perkawinan & Agama</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="h-56 mb-2">
-                <Bar data={makeBarData('Perkawinan', data.marital_status)} options={commonOptions} />
+          <div className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl hover:scale-105 transition-all duration-300" data-aos="fade-up">
+            <h2 className="text-xl font-bold text-gray-900 mb-4">Perkawinan & Agama</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Status Perkawinan</h3>
+                <div className="h-48 mb-4">
+                  <Bar data={makeBarData('Perkawinan', data.marital_status)} options={commonOptions} />
+                </div>
+                <ul className="space-y-2 text-sm">
+                  {data.marital_status && Object.entries(data.marital_status).map(([k, v]) => (
+                    <li key={k} className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded">
+                      <span className="font-medium text-gray-700">{k}</span>
+                      <span className="font-bold text-primary-600">{v}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-1 text-sm">
-                {data.marital_status && Object.entries(data.marital_status).map(([k, v]) => (
-                  <li key={k} className="flex justify-between border-b py-1"><span>{k}</span><span className="font-medium">{v}</span></li>
-                ))}
-              </ul>
-              <div className="h-56 mb-2">
-                <Bar data={makeBarData('Agama', data.religions)} options={commonOptions} />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3">Agama</h3>
+                <div className="h-48 mb-4">
+                  <Bar data={makeBarData('Agama', data.religions)} options={commonOptions} />
+                </div>
+                <ul className="space-y-2 text-sm">
+                  {data.religions && Object.entries(data.religions).map(([k, v]) => (
+                    <li key={k} className="flex justify-between items-center py-1 px-2 bg-gray-50 rounded">
+                      <span className="font-medium text-gray-700">{k}</span>
+                      <span className="font-bold text-primary-600">{v}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <ul className="space-y-1 text-sm">
-                {data.religions && Object.entries(data.religions).map(([k, v]) => (
-                  <li key={k} className="flex justify-between border-b py-1"><span>{k}</span><span className="font-medium">{v}</span></li>
-                ))}
-              </ul>
             </div>
           </div>
         </div>

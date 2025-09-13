@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapPin, Users, Award } from "lucide-react";
+import { MapPin, Users, Award, Home, TrendingUp, User } from "lucide-react";
 import { profileAPI, organizationAPI } from "../../utils/api";
 import { getImageUrl } from "../../utils/helpers";
 import DesaDaritMap from "../../components/common/DesaDaritMap";
@@ -183,57 +183,57 @@ const ProfilePage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div
-              className="text-center card p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="text-primary-600" size={32} />
+              <div className="w-12 h-12 orange-accent-gradient rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Users className="text-white" size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="text-3xl font-bold text-gray-900 mb-2">
                 {profile?.population || "1,234"}
-              </h3>
-              <p className="text-gray-600">Total Penduduk</p>
+              </div>
+              <div className="text-gray-600 font-medium">Total Penduduk</div>
             </div>
 
             <div
-              className="text-center card p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Award className="text-green-600" size={32} />
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Home className="text-white" size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="text-3xl font-bold text-gray-900 mb-2">
                 {profile?.families || "456"}
-              </h3>
-              <p className="text-gray-600">Kepala Keluarga</p>
+              </div>
+              <div className="text-gray-600 font-medium">Kepala Keluarga</div>
             </div>
 
             <div
-              className="text-center card p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="300"
             >
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="text-yellow-600" size={32} />
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <MapPin className="text-white" size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">
+              <div className="text-3xl font-bold text-gray-900 mb-2">
                 {profile?.area || "25.5"} km²
-              </h3>
-              <p className="text-gray-600">Luas Wilayah</p>
+              </div>
+              <div className="text-gray-600 font-medium">Luas Wilayah</div>
             </div>
 
             <div
-              className="text-center card p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="400"
             >
-              <div className="w-16 h-16 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <MapPin className="text-primary-600" size={32} />
+              <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <TrendingUp className="text-white" size={24} />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">8</h3>
-              <p className="text-gray-600">Dusun</p>
+              <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
+              <div className="text-gray-600 font-medium">Dusun</div>
             </div>
           </div>
         </div>
@@ -351,8 +351,8 @@ const ProfilePage = () => {
                 data-aos="fade-up"
               >
                 {members.map((m, idx) => (
-                  <div key={m.id || idx} className="card p-6 text-center">
-                    <div className="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-gray-100">
+                  <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <div className="w-full h-28 md:h-64 bg-gradient-to-br from-green-100 to-emerald-200">
                       {m.image ? (
                         <img
                           src={getImageUrl(m.image)}
@@ -360,13 +360,17 @@ const ProfilePage = () => {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          No Image
+                        <div className="w-full h-full flex items-center justify-center text-primary-500">
+                          <User size={48} />
                         </div>
                       )}
                     </div>
-                    <h4 className="font-semibold text-gray-900">{m.name}</h4>
-                    <p className="text-sm text-gray-600">{m.position}</p>
+                    <div className="orange-accent-gradient p-4 h-24 md:h-auto flex flex-col items-center justify-center">
+                      <h4 className="text-sm md:text-xl font-semibold text-white font-bold text-center line-clamp-1 mb-2">
+                        {m.name}
+                      </h4>
+                      <p className="text-xs md:text-sm text-white/90 text-center">{m.position}</p>
+                    </div>
                   </div>
                 ))}
               </div>

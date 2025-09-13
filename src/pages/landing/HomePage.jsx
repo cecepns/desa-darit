@@ -15,6 +15,7 @@ import {
   profileAPI,
   infographicsAPI,
   organizationAPI,
+  shopAPI,
 } from "../../utils/api";
 import { getImageUrl } from "../../utils/helpers";
 import { bannersAPI } from "../../utils/api";
@@ -32,16 +33,18 @@ const HomePage = () => {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
+  const [products, setProducts] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, newsRes, statsRes, orgRes, bannersRes] = await Promise.all([
+        const [profileRes, newsRes, statsRes, orgRes, bannersRes, productsRes] = await Promise.all([
           profileAPI.get(),
           newsAPI.getAll({ limit: 3 }),
           infographicsAPI.get(),
           organizationAPI.getAll({ limit: 4 }),
           bannersAPI.getAll({ status: 'active', limit: 10 }),
+          shopAPI.getAll({ limit: 3 }),
         ]);
 
         setProfile(profileRes.data);
@@ -49,6 +52,7 @@ const HomePage = () => {
         setStats(statsRes.data);
         setMembers(orgRes.data.data || []);
         setBanners(bannersRes.data.data || []);
+        setProducts(productsRes.data.data || []);
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -129,74 +133,74 @@ const HomePage = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white section-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <div
-              className="text-center p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Users className="text-primary-600" size={24} />
+              <div className="w-12 h-12 orange-accent-gradient rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Users className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">
                 {stats?.total_population || "1,234"}
               </div>
-              <div className="text-gray-600">Total Penduduk</div>
+              <div className="text-gray-600 font-medium">Total Penduduk</div>
             </div>
 
             <div
-              className="text-center p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <MapPin className="text-green-600" size={24} />
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <MapPin className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">
                 {profile?.area || "25.5"} km²
               </div>
-              <div className="text-gray-600">Luas Wilayah</div>
+              <div className="text-gray-600 font-medium">Luas Wilayah</div>
             </div>
 
             <div
-              className="text-center p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="300"
             >
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <Award className="text-yellow-600" size={24} />
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Award className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">
                 {stats?.total_families || "456"}
               </div>
-              <div className="text-gray-600">Kepala Keluarga</div>
+              <div className="text-gray-600 font-medium">Kepala Keluarga</div>
             </div>
 
             <div
-              className="text-center p-6"
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
               data-aos="fade-up"
               data-aos-delay="400"
             >
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="text-primary-600" size={24} />
+              <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <TrendingUp className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
-              <div className="text-gray-600">Dusun</div>
+              <div className="text-gray-600 font-medium">Dusun</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 green-gradient">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16" data-aos="fade-up">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
               Layanan Desa Darit
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-white/90 max-w-2xl mx-auto">
               Berbagai layanan dan informasi yang tersedia untuk masyarakat Desa
               Darit
             </p>
@@ -205,69 +209,69 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <Link
               to="/profil"
-              className="card p-8 hover:scale-105 transition-all duration-300 group"
+              className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 hover:scale-105 group"
               data-aos="fade-up"
               data-aos-delay="100"
             >
-              <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-primary-600 transition-colors duration-300">
+              <div className="w-12 h-12 orange-accent-gradient rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                 <User
-                  className="text-primary-600 group-hover:text-white transition-colors duration-300"
+                  className="text-white"
                   size={24}
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-semibold text-primary-900 mb-4">
                 Profil Desa
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-primary-700 mb-4">
                 Pelajari sejarah, visi misi, dan struktur organisasi Desa Darit
               </p>
-              <span className="text-primary-600 font-medium group-hover:text-primary-700 inline-flex items-center">
+              <span className="text-orange-600 font-medium group-hover:text-orange-700 inline-flex items-center">
                 Lihat Detail <ArrowRight size={16} className="ml-1" />
               </span>
             </Link>
 
             <Link
               to="/infografis"
-              className="card p-8 hover:scale-105 transition-all duration-300 group"
+              className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 hover:scale-105 group"
               data-aos="fade-up"
               data-aos-delay="200"
             >
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-green-600 transition-colors duration-300">
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                 <BarChart3
-                  className="text-green-600 group-hover:text-white transition-colors duration-300"
+                  className="text-white"
                   size={24}
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-semibold text-primary-900 mb-4">
                 Data Infografis
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-primary-700 mb-4">
                 Statistik dan data demografis masyarakat Desa Darit
               </p>
-              <span className="text-primary-600 font-medium group-hover:text-primary-700 inline-flex items-center">
+              <span className="text-orange-600 font-medium group-hover:text-orange-700 inline-flex items-center">
                 Lihat Data <ArrowRight size={16} className="ml-1" />
               </span>
             </Link>
 
             <Link
               to="/belanja"
-              className="card p-8 hover:scale-105 transition-all duration-300 group"
+              className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8 hover:scale-105 group"
               data-aos="fade-up"
               data-aos-delay="300"
             >
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-6 group-hover:bg-yellow-600 transition-colors duration-300">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-600 to-red-500 rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg">
                 <ShoppingBag
-                  className="text-yellow-600 group-hover:text-white transition-colors duration-300"
+                  className="text-white"
                   size={24}
                 />
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
+              <h3 className="text-xl font-semibold text-primary-900 mb-4">
                 Belanja Desa
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-primary-700 mb-4">
                 Produk UMKM dan hasil pertanian dari masyarakat Desa Darit
               </p>
-              <span className="text-primary-600 font-medium group-hover:text-primary-700 inline-flex items-center">
+              <span className="text-orange-600 font-medium group-hover:text-orange-700 inline-flex items-center">
                 Lihat Produk <ArrowRight size={16} className="ml-1" />
               </span>
             </Link>
@@ -276,17 +280,17 @@ const HomePage = () => {
       </section>
 
       {/* Map Section */}
-      <section className="pt-24">
+      <section className="pt-24 pb-20 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8" data-aos="fade-up">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+            <h2 className="text-3xl lg:text-4xl font-bold text-primary-900 mb-3">
               Peta Desa Darit
             </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
+            <p className="text-primary-700 max-w-2xl mx-auto">
               Lokasi dan batas wilayah perkiraan. Akan diperbarui dengan data resmi.
             </p>
           </div>
-          <div data-aos="fade-up" data-aos-delay="100" className="rounded-lg overflow-hidden shadow">
+          <div data-aos="fade-up" data-aos-delay="100" className="rounded-lg overflow-hidden shadow-2xl border-4 border-white">
             <DesaDaritMap height="480px" />
           </div>
         </div>
@@ -294,7 +298,7 @@ const HomePage = () => {
 
       {/* Organization Section (limit 4) */}
       {members.length > 0 && (
-        <section className="py-20 bg-white">
+        <section className="py-20 bg-gray-50 section-pattern">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16" data-aos="fade-up">
               <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -309,8 +313,8 @@ const HomePage = () => {
               data-aos="fade-up"
             >
               {members.map((m, idx) => (
-                <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-md">
-                  <div className="w-full h-28 md:h-64 bg-slate-50">
+                <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <div className="w-full h-28 md:h-64 bg-gradient-to-br from-green-100 to-emerald-200">
                     {m.image ? (
                       <img
                         src={getImageUrl(m.image)}
@@ -318,16 +322,16 @@ const HomePage = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                      <div className="w-full h-full flex items-center justify-center text-primary-500">
                         No Image
                       </div>
                     )}
                   </div>
-                  <div className="bg-primary-600 p-4 h-24 md:h-auto flex flex-col items-center justify-center">
+                  <div className="orange-accent-gradient p-4 h-24 md:h-auto flex flex-col items-center justify-center">
                     <h4 className="text-sm md:text-xl font-semibold text-white font-bold text-center line-clamp-1 mb-2">
                       {m.name}
                     </h4>
-                    <p className="text-xs md:text-sm text-white text-center">{m.position}</p>
+                    <p className="text-xs md:text-sm text-white/90 text-center">{m.position}</p>
                   </div>
                 </div>
               ))}
@@ -345,8 +349,80 @@ const HomePage = () => {
         </section>
       )}
 
+      {/* Administrasi Penduduk Section */}
+      <section className="py-20 bg-white section-pattern">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16" data-aos="fade-up">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              Administrasi Penduduk
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+              Sistem digital yang berfungsi mempermudah pengelolaan data dan informasi terkait dengan kependudukan dan pendayagunaannya untuk pelayanan publik yang efektif dan efisien
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+            <div
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <div className="w-12 h-12 orange-accent-gradient rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Users className="text-white" size={24} />
+              </div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">
+                {stats?.total_population || "1,234"}
+              </div>
+              <div className="text-gray-600 font-medium">Jumlah Penduduk</div>
+            </div>
+
+            <div
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <User className="text-white" size={24} />
+              </div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">
+                {stats?.total_families || "456"}
+              </div>
+              <div className="text-gray-600 font-medium">Kepala Keluarga</div>
+            </div>
+
+            <div
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
+              data-aos="fade-up"
+              data-aos-delay="300"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-blue-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Users className="text-white" size={24} />
+              </div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">
+                {stats?.total_male || "612"}
+              </div>
+              <div className="text-gray-600 font-medium">Total Laki-laki</div>
+            </div>
+
+            <div
+              className="text-center p-6 card hover:scale-105 transition-all duration-300"
+              data-aos="fade-up"
+              data-aos-delay="400"
+            >
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-600 to-pink-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Users className="text-white" size={24} />
+              </div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">
+                {stats?.total_female || "622"}
+              </div>
+              <div className="text-gray-600 font-medium">Total Perempuan</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Latest News Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white section-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16" data-aos="fade-up">
             <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
@@ -362,7 +438,7 @@ const HomePage = () => {
               <Link
                 key={item.id}
                 to={`/berita/${item.id}`}
-                className="card overflow-hidden hover:scale-105 transition-all duration-300"
+                className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl overflow-hidden hover:scale-105 transition-all duration-300"
                 data-aos="fade-up"
                 data-aos-delay={100 + index * 100}
               >
@@ -376,7 +452,7 @@ const HomePage = () => {
                   className="w-full h-48 object-cover"
                 />
                 <div className="p-6">
-                  <div className="text-sm text-primary-600 font-medium mb-2">
+                  <div className="text-sm text-orange-600 font-medium mb-2">
                     {new Date(item.created_at).toLocaleDateString("id-ID", {
                       year: "numeric",
                       month: "long",
@@ -391,7 +467,7 @@ const HomePage = () => {
                       item.content.replace(/<[^>]*>/g, "").slice(0, 100) +
                         "..."}
                   </p>
-                  <span className="text-primary-600 font-medium inline-flex items-center">
+                  <span className="text-orange-600 font-medium inline-flex items-center">
                     Baca Selengkapnya <ArrowRight size={16} className="ml-1" />
                   </span>
                 </div>
@@ -407,6 +483,74 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Shop Section */}
+      {products.length > 0 && (
+        <section className="py-20 green-gradient">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16" data-aos="fade-up">
+              <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+                Belanja dari Desa
+              </h2>
+              <p className="text-xl text-white/90 max-w-2xl mx-auto">
+                Produk UMKM dan hasil pertanian dari masyarakat Desa Darit
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {products.map((product, index) => (
+                <Link
+                  key={product.id}
+                  to={`/belanja/${product.id}`}
+                  className="bg-white/95 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl overflow-hidden hover:scale-105 transition-all duration-300"
+                  data-aos="fade-up"
+                  data-aos-delay={100 + index * 100}
+                >
+                  <div className="w-full h-48 bg-slate-50">
+                    {product.image ? (
+                      <img
+                        src={getImageUrl(product.image)}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <ShoppingBag size={48} />
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-semibold text-gray-900 mb-3 line-clamp-2">
+                      {product.name}
+                    </h3>
+                    <p className="text-gray-600 line-clamp-3 mb-4">
+                      {product.description ? 
+                        product.description.replace(/<[^>]*>/g, "").slice(0, 100) + "..." : 
+                        "Produk berkualitas dari Desa Darit"
+                      }
+                    </p>
+                    <div className="flex items-center justify-between">
+                      <div className="text-2xl font-bold text-orange-600">
+                        Rp {Number(product.price).toLocaleString("id-ID")}
+                      </div>
+                      <span className="text-orange-600 font-medium inline-flex items-center">
+                        Lihat Produk <ArrowRight size={16} className="ml-1" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="text-center mt-12" data-aos="fade-up">
+              <Link to="/belanja" className="btn-primary inline-flex items-center">
+                Lihat Semua Produk
+                <ArrowRight size={20} className="ml-2" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
     </div>
   );

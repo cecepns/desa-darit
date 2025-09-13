@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 import Logo from '../../assets/kemendesa.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
 
   const navigation = [
@@ -16,29 +15,18 @@ const Header = () => {
     { name: 'Belanja', href: '/belanja' },
   ];
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const isActive = (path) => location.pathname === path;
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled ? 'bg-white shadow-lg' : 'bg-white/95 backdrop-blur-sm'
-    }`}>
+    <header className="fixed top-0 left-0 right-0 z-50 green-gradient backdrop-blur-sm shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
             <img src={Logo} className="w-20 h-auto" />
             <div className="hidden sm:block">
-              <h1 className="text-xl font-bold text-gray-900">Desa Darit</h1>
-              <p className="text-xs text-gray-600">Kec. Menyuke, Kab. Landak</p>
+              <h1 className="text-xl font-bold text-white drop-shadow-lg">Desa Darit</h1>
+              <p className="text-xs text-white/80">Kec. Menyuke, Kab. Landak</p>
             </div>
           </Link>
 
@@ -50,8 +38,8 @@ const Header = () => {
                 to={item.href}
                 className={`text-sm font-medium transition-colors duration-200 ${
                   isActive(item.href)
-                    ? 'text-primary-600 border-b-2 border-primary-600'
-                    : 'text-gray-700 hover:text-primary-600'
+                    ? 'text-orange-300 border-b-2 border-orange-300 shadow-sm'
+                    : 'text-white/90 hover:text-orange-300 hover:drop-shadow-sm'
                 } pb-1`}
               >
                 {item.name}
@@ -62,7 +50,7 @@ const Header = () => {
           {/* Mobile menu button */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="lg:hidden p-2 rounded-md text-gray-700 hover:text-primary-600 hover:bg-gray-100 transition-colors duration-200"
+            className="lg:hidden p-2 rounded-md text-white/90 hover:text-orange-300 hover:bg-white/10 transition-colors duration-200"
           >
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -71,7 +59,7 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="lg:hidden bg-white border-t shadow-lg">
+        <div className="lg:hidden green-gradient/95 backdrop-blur-md border-t border-primary-600 shadow-lg">
           <div className="px-4 pt-2 pb-4 space-y-1">
             {navigation.map((item) => (
               <Link
@@ -80,8 +68,8 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
                 className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                   isActive(item.href)
-                    ? 'text-primary-600 bg-primary-50'
-                    : 'text-gray-700 hover:text-primary-600 hover:bg-gray-50'
+                    ? 'text-orange-300 bg-white/20'
+                    : 'text-white/90 hover:text-orange-300 hover:bg-white/10'
                 }`}
               >
                 {item.name}
