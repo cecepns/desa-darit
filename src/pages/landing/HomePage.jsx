@@ -9,6 +9,8 @@ import {
   User,
   BarChart3,
   ShoppingBag,
+  DollarSign,
+  TrendingDown,
 } from "lucide-react";
 import {
   newsAPI,
@@ -16,6 +18,7 @@ import {
   infographicsAPI,
   organizationAPI,
   shopAPI,
+  apbAPI,
 } from "../../utils/api";
 import { getImageUrl } from "../../utils/helpers";
 import { bannersAPI } from "../../utils/api";
@@ -34,17 +37,19 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [banners, setBanners] = useState([]);
   const [products, setProducts] = useState([]);
+  const [apbData, setApbData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileRes, newsRes, statsRes, orgRes, bannersRes, productsRes] = await Promise.all([
+        const [profileRes, newsRes, statsRes, orgRes, bannersRes, productsRes, apbYearsRes] = await Promise.all([
           profileAPI.get(),
           newsAPI.getAll({ limit: 3 }),
           infographicsAPI.get(),
           organizationAPI.getAll({ limit: 4 }),
           bannersAPI.getAll({ status: 'active', limit: 10 }),
           shopAPI.getAll({ limit: 3 }),
+          apbAPI.years.getAll(),
         ]);
 
         setProfile(profileRes.data);
@@ -53,6 +58,31 @@ const HomePage = () => {
         setMembers(orgRes.data.data || []);
         setBanners(bannersRes.data.data || []);
         setProducts(productsRes.data.data || []);
+        
+        // Get current year APB data
+        const currentYear = new Date().getFullYear();
+        const apbYears = apbYearsRes.data.data || [];
+        const currentYearData = apbYears.find(year => year.year === currentYear);
+        
+        if (currentYearData) {
+          try {
+            const [incomeRes, expenditureRes] = await Promise.all([
+              apbAPI.income.getByYear(currentYearData.id),
+              apbAPI.expenditure.getByYear(currentYearData.id),
+            ]);
+            
+            const incomeTotal = incomeRes.data.data?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
+            const expenditureTotal = expenditureRes.data.data?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
+            
+            setApbData({
+              year: currentYear,
+              incomeTotal,
+              expenditureTotal,
+            });
+          } catch (error) {
+            console.error("Error fetching APB data:", error);
+          }
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -62,6 +92,15 @@ const HomePage = () => {
 
     fetchData();
   }, []);
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
 
   if (loading) {
     return (
@@ -133,7 +172,7 @@ const HomePage = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white section-pattern">
+      <section className="pt-10 md:pt-20 pb-20 bg-white section-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
             <div
@@ -417,6 +456,141 @@ const HomePage = () => {
               </div>
               <div className="text-gray-600 font-medium">Total Perempuan</div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* APB Desa 2025 Section */}
+      <section className="py-20 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100 section-pattern">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16" data-aos="fade-up">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+              APB Desa {apbData?.year || new Date().getFullYear()}
+            </h2>
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto">
+              Akses cepat dan transparan terhadap APB Desa serta proyek pembangunan
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Pendapatan Desa Card */}
+            <div
+              className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-8 hover:scale-105 border-l-4 border-green-500"
+              data-aos="fade-up"
+              data-aos-delay="100"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg">
+                  <TrendingUp className="text-white" size={28} />
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500 font-medium">Total Pendapatan</div>
+                  <div className="text-xs text-gray-400">Tahun {apbData?.year || new Date().getFullYear()}</div>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Pendapatan Desa</h3>
+                <div className="text-3xl lg:text-4xl font-bold text-green-600 mb-2">
+                  {apbData ? formatCurrency(apbData.incomeTotal) : "Rp 0"}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {apbData?.incomeTotal > 0 ? "Anggaran yang telah dialokasikan" : "Data belum tersedia"}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-green-600">
+                  <DollarSign size={16} className="mr-1" />
+                  <span className="text-sm font-medium">Anggaran Masuk</span>
+                </div>
+                <Link 
+                  to="/apb" 
+                  className="text-green-600 hover:text-green-700 font-medium text-sm inline-flex items-center transition-colors"
+                >
+                  Lihat Detail <ArrowRight size={14} className="ml-1" />
+                </Link>
+              </div>
+            </div>
+
+            {/* Belanja Desa Card */}
+            <div
+              className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-8 hover:scale-105 border-l-4 border-orange-500"
+              data-aos="fade-up"
+              data-aos-delay="200"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                  <TrendingDown className="text-white" size={28} />
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500 font-medium">Total Belanja</div>
+                  <div className="text-xs text-gray-400">Tahun {apbData?.year || new Date().getFullYear()}</div>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Belanja Desa</h3>
+                <div className="text-3xl lg:text-4xl font-bold text-orange-600 mb-2">
+                  {apbData ? formatCurrency(apbData.expenditureTotal) : "Rp 0"}
+                </div>
+                <div className="text-sm text-gray-500">
+                  {apbData?.expenditureTotal > 0 ? "Anggaran yang telah digunakan" : "Data belum tersedia"}
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between">
+                <div className="flex items-center text-orange-600">
+                  <BarChart3 size={16} className="mr-1" />
+                  <span className="text-sm font-medium">Pengeluaran</span>
+                </div>
+                <Link 
+                  to="/apb" 
+                  className="text-orange-600 hover:text-orange-700 font-medium text-sm inline-flex items-center transition-colors"
+                >
+                  Lihat Detail <ArrowRight size={14} className="ml-1" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Summary Card */}
+          {apbData && (apbData.incomeTotal > 0 || apbData.expenditureTotal > 0) && (
+            <div className="mt-8 max-w-2xl mx-auto" data-aos="fade-up" data-aos-delay="300">
+              <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl shadow-xl p-6 text-white">
+                <div className="text-center">
+                  <h4 className="text-lg font-semibold mb-2">Ringkasan APB Desa {apbData.year}</h4>
+                  <div className="grid grid-cols-2 gap-4 text-center">
+                    <div>
+                      <div className="text-2xl font-bold text-green-300">
+                        {formatCurrency(apbData.incomeTotal)}
+                      </div>
+                      <div className="text-sm text-white/80">Total Pendapatan</div>
+                    </div>
+                    <div>
+                      <div className="text-2xl font-bold text-orange-300">
+                        {formatCurrency(apbData.expenditureTotal)}
+                      </div>
+                      <div className="text-sm text-white/80">Total Belanja</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-white/20">
+                    <div className="text-lg font-semibold">
+                      Saldo: <span className={apbData.incomeTotal - apbData.expenditureTotal >= 0 ? "text-green-300" : "text-red-300"}>
+                        {formatCurrency(apbData.incomeTotal - apbData.expenditureTotal)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="text-center mt-12" data-aos="fade-up" data-aos-delay="400">
+            <Link to="/apb" className="btn-primary inline-flex items-center">
+              Lihat Detail APB Lengkap
+              <ArrowRight size={20} className="ml-2" />
+            </Link>
           </div>
         </div>
       </section>
