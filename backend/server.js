@@ -68,6 +68,65 @@ const initDB = async () => {
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    // APB Desa tables
+    await db.execute(`CREATE TABLE IF NOT EXISTS apb_years (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      year INT NOT NULL UNIQUE,
+      status ENUM('draft', 'approved', 'active') DEFAULT 'draft',
+      total_income DECIMAL(15,2) DEFAULT 0,
+      total_expenditure DECIMAL(15,2) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_year (year),
+      INDEX idx_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    await db.execute(`CREATE TABLE IF NOT EXISTS apb_income_categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    await db.execute(`CREATE TABLE IF NOT EXISTS apb_expenditure_categories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      description TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    await db.execute(`CREATE TABLE IF NOT EXISTS apb_income (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      year_id INT NOT NULL,
+      category_id INT NOT NULL,
+      source VARCHAR(255) NOT NULL,
+      description TEXT,
+      budgeted_amount DECIMAL(15,2) NOT NULL,
+      realized_amount DECIMAL(15,2) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (year_id) REFERENCES apb_years(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES apb_income_categories(id) ON DELETE RESTRICT,
+      INDEX idx_year_category (year_id, category_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    await db.execute(`CREATE TABLE IF NOT EXISTS apb_expenditure (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      year_id INT NOT NULL,
+      category_id INT NOT NULL,
+      activity VARCHAR(255) NOT NULL,
+      description TEXT,
+      budgeted_amount DECIMAL(15,2) NOT NULL,
+      realized_amount DECIMAL(15,2) DEFAULT 0,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (year_id) REFERENCES apb_years(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES apb_expenditure_categories(id) ON DELETE RESTRICT,
+      INDEX idx_year_category (year_id, category_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
   } catch (error) {
     console.error('Database connection failed:', error);
     process.exit(1);
@@ -1085,6 +1144,466 @@ app.put('/api/contact-settings', authenticateToken, async (req, res) => {
     }
   } catch (error) {
     handleDBError(error, res, 'Failed to update contact settings');
+  }
+});
+
+// ===============================
+// APB DESA ROUTES
+// ===============================
+
+// Get all APB years
+app.get('/api/apb/years', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM apb_years ORDER BY year DESC');
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get APB years');
+  }
+});
+
+// Get single APB year by ID
+app.get('/api/apb/years/:id', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM apb_years WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'APB year not found' });
+    res.json({ data: rows[0] });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get APB year');
+  }
+});
+
+// Create APB year
+app.post('/api/apb/years', authenticateToken, async (req, res) => {
+  try {
+    const { year, status } = req.body;
+    if (!year) return res.status(400).json({ message: 'Year is required' });
+    
+    const [result] = await db.execute(
+      'INSERT INTO apb_years (year, status) VALUES (?, ?)',
+      [year, status || 'draft']
+    );
+    
+    res.status(201).json({ message: 'APB year created successfully', data: { id: result.insertId, year, status: status || 'draft' } });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to create APB year');
+  }
+});
+
+// Update APB year
+app.put('/api/apb/years/:id', authenticateToken, async (req, res) => {
+  try {
+    const { year, status, total_income, total_expenditure } = req.body;
+    const yearId = req.params.id;
+    
+    const [existingRows] = await db.execute('SELECT * FROM apb_years WHERE id = ?', [yearId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'APB year not found' });
+    
+    await db.execute(
+      'UPDATE apb_years SET year = ?, status = ?, total_income = ?, total_expenditure = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [year, status, total_income, total_expenditure, yearId]
+    );
+    
+    res.json({ message: 'APB year updated successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update APB year');
+  }
+});
+
+// Delete APB year
+app.delete('/api/apb/years/:id', authenticateToken, async (req, res) => {
+  try {
+    const yearId = req.params.id;
+    const [existingRows] = await db.execute('SELECT * FROM apb_years WHERE id = ?', [yearId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'APB year not found' });
+    
+    await db.execute('DELETE FROM apb_years WHERE id = ?', [yearId]);
+    res.json({ message: 'APB year deleted successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to delete APB year');
+  }
+});
+
+// Get income categories
+app.get('/api/apb/categories/income', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM apb_income_categories ORDER BY name');
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get income categories');
+  }
+});
+
+// Create income category
+app.post('/api/apb/categories/income', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ message: 'Name is required' });
+    
+    const [result] = await db.execute(
+      'INSERT INTO apb_income_categories (name, description) VALUES (?, ?)',
+      [name, description]
+    );
+    
+    res.status(201).json({ message: 'Income category created successfully', data: { id: result.insertId, name, description } });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to create income category');
+  }
+});
+
+// Update income category
+app.put('/api/apb/categories/income/:id', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const categoryId = req.params.id;
+    
+    const [existingRows] = await db.execute('SELECT * FROM apb_income_categories WHERE id = ?', [categoryId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Income category not found' });
+    
+    await db.execute(
+      'UPDATE apb_income_categories SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [name, description, categoryId]
+    );
+    
+    res.json({ message: 'Income category updated successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update income category');
+  }
+});
+
+// Delete income category
+app.delete('/api/apb/categories/income/:id', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const [existingRows] = await db.execute('SELECT * FROM apb_income_categories WHERE id = ?', [categoryId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Income category not found' });
+    
+    await db.execute('DELETE FROM apb_income_categories WHERE id = ?', [categoryId]);
+    res.json({ message: 'Income category deleted successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to delete income category');
+  }
+});
+
+// Get expenditure categories
+app.get('/api/apb/categories/expenditure', async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM apb_expenditure_categories ORDER BY name');
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get expenditure categories');
+  }
+});
+
+// Create expenditure category
+app.post('/api/apb/categories/expenditure', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ message: 'Name is required' });
+    
+    const [result] = await db.execute(
+      'INSERT INTO apb_expenditure_categories (name, description) VALUES (?, ?)',
+      [name, description]
+    );
+    
+    res.status(201).json({ message: 'Expenditure category created successfully', data: { id: result.insertId, name, description } });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to create expenditure category');
+  }
+});
+
+// Update expenditure category
+app.put('/api/apb/categories/expenditure/:id', authenticateToken, async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const categoryId = req.params.id;
+    
+    const [existingRows] = await db.execute('SELECT * FROM apb_expenditure_categories WHERE id = ?', [categoryId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Expenditure category not found' });
+    
+    await db.execute(
+      'UPDATE apb_expenditure_categories SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [name, description, categoryId]
+    );
+    
+    res.json({ message: 'Expenditure category updated successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update expenditure category');
+  }
+});
+
+// Delete expenditure category
+app.delete('/api/apb/categories/expenditure/:id', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const [existingRows] = await db.execute('SELECT * FROM apb_expenditure_categories WHERE id = ?', [categoryId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Expenditure category not found' });
+    
+    await db.execute('DELETE FROM apb_expenditure_categories WHERE id = ?', [categoryId]);
+    res.json({ message: 'Expenditure category deleted successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to delete expenditure category');
+  }
+});
+
+// Get all income data
+app.get('/api/apb/income', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT ai.*, aic.name as category_name, ay.year 
+      FROM apb_income ai 
+      JOIN apb_income_categories aic ON ai.category_id = aic.id 
+      JOIN apb_years ay ON ai.year_id = ay.id 
+      ORDER BY ay.year DESC, ai.created_at DESC
+    `);
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get income data');
+  }
+});
+
+// Get income data by year
+app.get('/api/apb/income/year/:yearId', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT ai.*, aic.name as category_name, ay.year 
+      FROM apb_income ai 
+      JOIN apb_income_categories aic ON ai.category_id = aic.id 
+      JOIN apb_years ay ON ai.year_id = ay.id 
+      WHERE ai.year_id = ? 
+      ORDER BY ai.created_at DESC
+    `, [req.params.yearId]);
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get income data by year');
+  }
+});
+
+// Get single income by ID
+app.get('/api/apb/income/:id', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT ai.*, aic.name as category_name, ay.year 
+      FROM apb_income ai 
+      JOIN apb_income_categories aic ON ai.category_id = aic.id 
+      JOIN apb_years ay ON ai.year_id = ay.id 
+      WHERE ai.id = ?
+    `, [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Income data not found' });
+    res.json({ data: rows[0] });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get income data');
+  }
+});
+
+// Create income data
+app.post('/api/apb/income', authenticateToken, async (req, res) => {
+  try {
+    const { year_id, category_id, source, description, budgeted_amount, realized_amount } = req.body;
+    if (!year_id || !category_id || !source || !budgeted_amount) {
+      return res.status(400).json({ message: 'Year, category, source, and budgeted amount are required' });
+    }
+    
+    const [result] = await db.execute(
+      'INSERT INTO apb_income (year_id, category_id, source, description, budgeted_amount, realized_amount) VALUES (?, ?, ?, ?, ?, ?)',
+      [year_id, category_id, source, description, budgeted_amount, realized_amount || 0]
+    );
+    
+    res.status(201).json({ message: 'Income data created successfully', data: { id: result.insertId } });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to create income data');
+  }
+});
+
+// Update income data
+app.put('/api/apb/income/:id', authenticateToken, async (req, res) => {
+  try {
+    const { year_id, category_id, source, description, budgeted_amount, realized_amount } = req.body;
+    const incomeId = req.params.id;
+    
+    const [existingRows] = await db.execute('SELECT * FROM apb_income WHERE id = ?', [incomeId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Income data not found' });
+    
+    await db.execute(
+      'UPDATE apb_income SET year_id = ?, category_id = ?, source = ?, description = ?, budgeted_amount = ?, realized_amount = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [year_id, category_id, source, description, budgeted_amount, realized_amount, incomeId]
+    );
+    
+    res.json({ message: 'Income data updated successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update income data');
+  }
+});
+
+// Delete income data
+app.delete('/api/apb/income/:id', authenticateToken, async (req, res) => {
+  try {
+    const incomeId = req.params.id;
+    const [existingRows] = await db.execute('SELECT * FROM apb_income WHERE id = ?', [incomeId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Income data not found' });
+    
+    await db.execute('DELETE FROM apb_income WHERE id = ?', [incomeId]);
+    res.json({ message: 'Income data deleted successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to delete income data');
+  }
+});
+
+// Get all expenditure data
+app.get('/api/apb/expenditure', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT ae.*, aec.name as category_name, ay.year 
+      FROM apb_expenditure ae 
+      JOIN apb_expenditure_categories aec ON ae.category_id = aec.id 
+      JOIN apb_years ay ON ae.year_id = ay.id 
+      ORDER BY ay.year DESC, ae.created_at DESC
+    `);
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get expenditure data');
+  }
+});
+
+// Get expenditure data by year
+app.get('/api/apb/expenditure/year/:yearId', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT ae.*, aec.name as category_name, ay.year 
+      FROM apb_expenditure ae 
+      JOIN apb_expenditure_categories aec ON ae.category_id = aec.id 
+      JOIN apb_years ay ON ae.year_id = ay.id 
+      WHERE ae.year_id = ? 
+      ORDER BY ae.created_at DESC
+    `, [req.params.yearId]);
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get expenditure data by year');
+  }
+});
+
+// Get single expenditure by ID
+app.get('/api/apb/expenditure/:id', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT ae.*, aec.name as category_name, ay.year 
+      FROM apb_expenditure ae 
+      JOIN apb_expenditure_categories aec ON ae.category_id = aec.id 
+      JOIN apb_years ay ON ae.year_id = ay.id 
+      WHERE ae.id = ?
+    `, [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Expenditure data not found' });
+    res.json({ data: rows[0] });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get expenditure data');
+  }
+});
+
+// Create expenditure data
+app.post('/api/apb/expenditure', authenticateToken, async (req, res) => {
+  try {
+    const { year_id, category_id, activity, description, budgeted_amount, realized_amount } = req.body;
+    if (!year_id || !category_id || !activity || !budgeted_amount) {
+      return res.status(400).json({ message: 'Year, category, activity, and budgeted amount are required' });
+    }
+    
+    const [result] = await db.execute(
+      'INSERT INTO apb_expenditure (year_id, category_id, activity, description, budgeted_amount, realized_amount) VALUES (?, ?, ?, ?, ?, ?)',
+      [year_id, category_id, activity, description, budgeted_amount, realized_amount || 0]
+    );
+    
+    res.status(201).json({ message: 'Expenditure data created successfully', data: { id: result.insertId } });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to create expenditure data');
+  }
+});
+
+// Update expenditure data
+app.put('/api/apb/expenditure/:id', authenticateToken, async (req, res) => {
+  try {
+    const { year_id, category_id, activity, description, budgeted_amount, realized_amount } = req.body;
+    const expenditureId = req.params.id;
+    
+    const [existingRows] = await db.execute('SELECT * FROM apb_expenditure WHERE id = ?', [expenditureId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Expenditure data not found' });
+    
+    await db.execute(
+      'UPDATE apb_expenditure SET year_id = ?, category_id = ?, activity = ?, description = ?, budgeted_amount = ?, realized_amount = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [year_id, category_id, activity, description, budgeted_amount, realized_amount, expenditureId]
+    );
+    
+    res.json({ message: 'Expenditure data updated successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update expenditure data');
+  }
+});
+
+// Delete expenditure data
+app.delete('/api/apb/expenditure/:id', authenticateToken, async (req, res) => {
+  try {
+    const expenditureId = req.params.id;
+    const [existingRows] = await db.execute('SELECT * FROM apb_expenditure WHERE id = ?', [expenditureId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Expenditure data not found' });
+    
+    await db.execute('DELETE FROM apb_expenditure WHERE id = ?', [expenditureId]);
+    res.json({ message: 'Expenditure data deleted successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to delete expenditure data');
+  }
+});
+
+// Get APB summary by year
+app.get('/api/apb/summary/:yearId', async (req, res) => {
+  try {
+    const [yearRows] = await db.execute('SELECT * FROM apb_years WHERE id = ?', [req.params.yearId]);
+    if (yearRows.length === 0) return res.status(404).json({ message: 'APB year not found' });
+    
+    const [incomeRows] = await db.execute(`
+      SELECT ai.*, aic.name as category_name 
+      FROM apb_income ai 
+      JOIN apb_income_categories aic ON ai.category_id = aic.id 
+      WHERE ai.year_id = ?
+    `, [req.params.yearId]);
+    
+    const [expenditureRows] = await db.execute(`
+      SELECT ae.*, aec.name as category_name 
+      FROM apb_expenditure ae 
+      JOIN apb_expenditure_categories aec ON ae.category_id = aec.id 
+      WHERE ae.year_id = ?
+    `, [req.params.yearId]);
+    
+    res.json({ 
+      data: {
+        year: yearRows[0],
+        income: incomeRows,
+        expenditure: expenditureRows
+      }
+    });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get APB summary');
+  }
+});
+
+// Get all APB summary
+app.get('/api/apb/summary', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        ay.year,
+        ay.status,
+        ay.total_income,
+        ay.total_expenditure,
+        (ay.total_income - ay.total_expenditure) as surplus_deficit,
+        COUNT(DISTINCT ai.id) as income_items,
+        COUNT(DISTINCT ae.id) as expenditure_items
+      FROM apb_years ay
+      LEFT JOIN apb_income ai ON ay.id = ai.year_id
+      LEFT JOIN apb_expenditure ae ON ay.id = ae.year_id
+      GROUP BY ay.id, ay.year, ay.status, ay.total_income, ay.total_expenditure
+      ORDER BY ay.year DESC
+    `);
+    res.json({ data: rows });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get APB summary');
   }
 });
 

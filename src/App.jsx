@@ -12,6 +12,7 @@ import NewsPage from './pages/landing/NewsPage';
 import NewsDetailPage from './pages/landing/NewsDetailPage';
 import ShopPage from './pages/landing/ShopPage';
 import ShopDetailPage from './pages/landing/ShopDetailPage';
+import APBPage from './pages/landing/APBPage';
 
 // Admin Components
 import AdminLayout from './components/layout/AdminLayout';
@@ -26,6 +27,7 @@ import AdminShopForm from './pages/admin/AdminShopForm';
 import AdminBannerPage from './pages/admin/AdminBannerPage';
 import AdminBannerForm from './pages/admin/AdminBannerForm';
 import AdminContactSettingsPage from './pages/admin/AdminContactSettingsPage';
+import AdminAPBPage from './pages/admin/AdminAPBPage';
 
 // Protected Route Component
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -53,6 +55,7 @@ function App() {
           <Route path="berita/:id" element={<NewsDetailPage />} />
           <Route path="belanja" element={<ShopPage />} />
           <Route path="belanja/:id" element={<ShopDetailPage />} />
+          <Route path="apb" element={<APBPage />} />
         </Route>
 
         {/* Admin Routes */}
@@ -72,6 +75,7 @@ function App() {
           <Route path="banner/tambah" element={<AdminBannerForm />} />
           <Route path="banner/edit/:id" element={<AdminBannerForm />} />
           <Route path="kontak" element={<AdminContactSettingsPage />} />
+          <Route path="apb" element={<AdminAPBPage />} />
           {/* Organization routes reuse AdminProfilePage section, so no separate pages needed */}
         </Route>
 

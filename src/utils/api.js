@@ -114,6 +114,51 @@ export const endpoints = {
     get: '/contact-settings',
     update: '/contact-settings',
   },
+  
+  // APB Desa endpoints
+  apb: {
+    years: {
+      getAll: '/apb/years',
+      getById: (id) => `/apb/years/${id}`,
+      create: '/apb/years',
+      update: (id) => `/apb/years/${id}`,
+      delete: (id) => `/apb/years/${id}`,
+    },
+    income: {
+      getAll: '/apb/income',
+      getByYear: (yearId) => `/apb/income/year/${yearId}`,
+      getById: (id) => `/apb/income/${id}`,
+      create: '/apb/income',
+      update: (id) => `/apb/income/${id}`,
+      delete: (id) => `/apb/income/${id}`,
+    },
+    expenditure: {
+      getAll: '/apb/expenditure',
+      getByYear: (yearId) => `/apb/expenditure/year/${yearId}`,
+      getById: (id) => `/apb/expenditure/${id}`,
+      create: '/apb/expenditure',
+      update: (id) => `/apb/expenditure/${id}`,
+      delete: (id) => `/apb/expenditure/${id}`,
+    },
+    categories: {
+      income: {
+        getAll: '/apb/categories/income',
+        create: '/apb/categories/income',
+        update: (id) => `/apb/categories/income/${id}`,
+        delete: (id) => `/apb/categories/income/${id}`,
+      },
+      expenditure: {
+        getAll: '/apb/categories/expenditure',
+        create: '/apb/categories/expenditure',
+        update: (id) => `/apb/categories/expenditure/${id}`,
+        delete: (id) => `/apb/categories/expenditure/${id}`,
+      },
+    },
+    summary: {
+      getByYear: (yearId) => `/apb/summary/${yearId}`,
+      getAll: '/apb/summary',
+    },
+  },
 };
 
 // API methods
@@ -208,6 +253,59 @@ export const dashboardAPI = {
 export const contactSettingsAPI = {
   get: () => api.get(endpoints.contactSettings.get),
   update: (data) => api.put(endpoints.contactSettings.update, data),
+};
+
+export const apbAPI = {
+  // Years
+  years: {
+    getAll: (params) => api.get(endpoints.apb.years.getAll, { params }),
+    getById: (id) => api.get(endpoints.apb.years.getById(id)),
+    create: (data) => api.post(endpoints.apb.years.create, data),
+    update: (id, data) => api.put(endpoints.apb.years.update(id), data),
+    delete: (id) => api.delete(endpoints.apb.years.delete(id)),
+  },
+  
+  // Income
+  income: {
+    getAll: (params) => api.get(endpoints.apb.income.getAll, { params }),
+    getByYear: (yearId) => api.get(endpoints.apb.income.getByYear(yearId)),
+    getById: (id) => api.get(endpoints.apb.income.getById(id)),
+    create: (data) => api.post(endpoints.apb.income.create, data),
+    update: (id, data) => api.put(endpoints.apb.income.update(id), data),
+    delete: (id) => api.delete(endpoints.apb.income.delete(id)),
+  },
+  
+  // Expenditure
+  expenditure: {
+    getAll: (params) => api.get(endpoints.apb.expenditure.getAll, { params }),
+    getByYear: (yearId) => api.get(endpoints.apb.expenditure.getByYear(yearId)),
+    getById: (id) => api.get(endpoints.apb.expenditure.getById(id)),
+    create: (data) => api.post(endpoints.apb.expenditure.create, data),
+    update: (id, data) => api.put(endpoints.apb.expenditure.update(id), data),
+    delete: (id) => api.delete(endpoints.apb.expenditure.delete(id)),
+  },
+  
+  // Categories
+  categories: {
+    income: {
+      getAll: () => api.get(endpoints.apb.categories.income.getAll),
+      create: (data) => api.post(endpoints.apb.categories.income.create, data),
+      update: (id, data) => api.put(endpoints.apb.categories.income.update(id), data),
+      delete: (id) => api.delete(endpoints.apb.categories.income.delete(id)),
+    },
+    expenditure: {
+      getAll: () => api.get(endpoints.apb.categories.expenditure.getAll),
+      create: (data) => api.post(endpoints.apb.categories.expenditure.create, data),
+      update: (id, data) => api.put(endpoints.apb.categories.expenditure.update(id), data),
+      delete: (id) => api.delete(endpoints.apb.categories.expenditure.delete(id)),
+    },
+  },
+  
+  // Summary
+  summary: {
+    getByYear: (yearId) => api.get(endpoints.apb.summary.getByYear(yearId)),
+    getAll: () => api.get(endpoints.apb.summary.getAll),
+  },
 };
 
 export default api;

@@ -13,6 +13,7 @@ const Header = () => {
     { name: 'Infografis', href: '/infografis' },
     { name: 'Berita', href: '/berita' },
     { name: 'Belanja', href: '/belanja' },
+    { name: 'APB Desa', href: '/apb' },
   ];
 
   const isActive = (path) => location.pathname === path;
