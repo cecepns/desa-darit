@@ -127,6 +127,22 @@ const initDB = async () => {
       FOREIGN KEY (category_id) REFERENCES apb_expenditure_categories(id) ON DELETE RESTRICT,
       INDEX idx_year_category (year_id, category_id)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+    
+    // Complaints table
+    await db.execute(`CREATE TABLE IF NOT EXISTS complaints (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      phone VARCHAR(20) NOT NULL,
+      category ENUM('umum', 'sosial', 'keamanan', 'kesehatan', 'kebersihan') NOT NULL,
+      description TEXT NOT NULL,
+      status ENUM('pending', 'in_progress', 'resolved', 'rejected') DEFAULT 'pending',
+      admin_response TEXT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      INDEX idx_status (status),
+      INDEX idx_category (category),
+      INDEX idx_created_at (created_at)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
   } catch (error) {
     console.error('Database connection failed:', error);
     process.exit(1);
@@ -1604,6 +1620,133 @@ app.get('/api/apb/summary', async (req, res) => {
     res.json({ data: rows });
   } catch (error) {
     handleDBError(error, res, 'Failed to get APB summary');
+  }
+});
+
+// ===============================
+// COMPLAINTS ROUTES
+// ===============================
+
+// Get all complaints (admin only)
+app.get('/api/complaints', authenticateToken, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search || '';
+    const status = req.query.status || '';
+    const category = req.query.category || '';
+
+    let query = 'SELECT * FROM complaints';
+    let countQuery = 'SELECT COUNT(*) as total FROM complaints';
+    const params = [];
+
+    const where = [];
+    if (search) {
+      where.push('(name LIKE ? OR description LIKE ?)');
+      params.push(`%${search}%`, `%${search}%`);
+    }
+    if (status) {
+      where.push('status = ?');
+      params.push(status);
+    }
+    if (category) {
+      where.push('category = ?');
+      params.push(category);
+    }
+    if (where.length) {
+      query += ' WHERE ' + where.join(' AND ');
+      countQuery += ' WHERE ' + where.join(' AND ');
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    const [rows] = await db.execute(query, [...params, limit, offset]);
+    const [countRows] = await db.execute(countQuery, params);
+    const total = countRows[0].total;
+    const totalPages = Math.ceil(total / limit);
+    
+    res.json({ 
+      data: rows, 
+      pagination: { page, limit, total, totalPages } 
+    });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get complaints');
+  }
+});
+
+// Get single complaint by ID (admin only)
+app.get('/api/complaints/:id', authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await db.execute('SELECT * FROM complaints WHERE id = ?', [req.params.id]);
+    if (rows.length === 0) return res.status(404).json({ message: 'Complaint not found' });
+    res.json({ data: rows[0] });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get complaint');
+  }
+});
+
+// Create complaint (public)
+app.post('/api/complaints', async (req, res) => {
+  try {
+    const { name, phone, category, description } = req.body;
+    
+    if (!name || !phone || !category || !description) {
+      return res.status(400).json({ message: 'Name, phone, category, and description are required' });
+    }
+    
+    if (!['umum', 'sosial', 'keamanan', 'kesehatan', 'kebersihan'].includes(category)) {
+      return res.status(400).json({ message: 'Invalid category' });
+    }
+    
+    const [result] = await db.execute(
+      'INSERT INTO complaints (name, phone, category, description) VALUES (?, ?, ?, ?)',
+      [name, phone, category, description]
+    );
+    
+    res.status(201).json({ 
+      message: 'Complaint submitted successfully', 
+      data: { id: result.insertId } 
+    });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to submit complaint');
+  }
+});
+
+// Update complaint status and response (admin only)
+app.put('/api/complaints/:id', authenticateToken, async (req, res) => {
+  try {
+    const { status, admin_response } = req.body;
+    const complaintId = req.params.id;
+    
+    if (!status || !['pending', 'in_progress', 'resolved', 'rejected'].includes(status)) {
+      return res.status(400).json({ message: 'Valid status is required' });
+    }
+    
+    const [existingRows] = await db.execute('SELECT * FROM complaints WHERE id = ?', [complaintId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Complaint not found' });
+    
+    await db.execute(
+      'UPDATE complaints SET status = ?, admin_response = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      [status, admin_response || null, complaintId]
+    );
+    
+    res.json({ message: 'Complaint updated successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to update complaint');
+  }
+});
+
+// Delete complaint (admin only)
+app.delete('/api/complaints/:id', authenticateToken, async (req, res) => {
+  try {
+    const complaintId = req.params.id;
+    const [existingRows] = await db.execute('SELECT * FROM complaints WHERE id = ?', [complaintId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'Complaint not found' });
+    
+    await db.execute('DELETE FROM complaints WHERE id = ?', [complaintId]);
+    res.json({ message: 'Complaint deleted successfully' });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to delete complaint');
   }
 });
 

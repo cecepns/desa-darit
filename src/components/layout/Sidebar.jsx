@@ -8,7 +8,8 @@ import {
   X,
   LogOut,
   Phone,
-  DollarSign
+  DollarSign,
+  MessageSquare
 } from 'lucide-react';
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -22,6 +23,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     { name: 'Infografis', href: '/admin/infografis', icon: BarChart3 },
     { name: 'Toko', href: '/admin/toko', icon: ShoppingBag },
     { name: 'APB Desa', href: '/admin/apb', icon: DollarSign },
+    { name: 'Pengaduan', href: '/admin/pengaduan', icon: MessageSquare },
     { name: 'Kontak & Media Sosial', href: '/admin/kontak', icon: Phone },
   ];
 

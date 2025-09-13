@@ -256,7 +256,7 @@ const APBPage = () => {
             {/* Tabs */}
             <div className="bg-white rounded-lg shadow-sm">
               <div className="border-b border-gray-200">
-                <nav className="-mb-px flex space-x-8 px-6">
+                <nav className="-mb-px flex flex-col md:flex-row md:space-x-8 px-6">
                   {[
                     { id: "overview", name: "Ringkasan", icon: BarChart3 },
                     { id: "income", name: "Pendapatan", icon: TrendingUp },

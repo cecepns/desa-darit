@@ -28,6 +28,7 @@ import AdminBannerPage from './pages/admin/AdminBannerPage';
 import AdminBannerForm from './pages/admin/AdminBannerForm';
 import AdminContactSettingsPage from './pages/admin/AdminContactSettingsPage';
 import AdminAPBPage from './pages/admin/AdminAPBPage';
+import AdminComplaintsPage from './pages/admin/AdminComplaintsPage';
 
 // Protected Route Component
 import ProtectedRoute from './components/common/ProtectedRoute';
@@ -76,6 +77,7 @@ function App() {
           <Route path="banner/edit/:id" element={<AdminBannerForm />} />
           <Route path="kontak" element={<AdminContactSettingsPage />} />
           <Route path="apb" element={<AdminAPBPage />} />
+          <Route path="pengaduan" element={<AdminComplaintsPage />} />
           {/* Organization routes reuse AdminProfilePage section, so no separate pages needed */}
         </Route>
 

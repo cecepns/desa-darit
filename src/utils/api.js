@@ -159,6 +159,15 @@ export const endpoints = {
       getAll: '/apb/summary',
     },
   },
+  
+  // Complaints endpoints
+  complaints: {
+    getAll: '/complaints',
+    getById: (id) => `/complaints/${id}`,
+    create: '/complaints',
+    update: (id) => `/complaints/${id}`,
+    delete: (id) => `/complaints/${id}`,
+  },
 };
 
 // API methods
@@ -306,6 +315,14 @@ export const apbAPI = {
     getByYear: (yearId) => api.get(endpoints.apb.summary.getByYear(yearId)),
     getAll: () => api.get(endpoints.apb.summary.getAll),
   },
+};
+
+export const complaintsAPI = {
+  getAll: (params) => api.get(endpoints.complaints.getAll, { params }),
+  getById: (id) => api.get(endpoints.complaints.getById(id)),
+  create: (data) => api.post(endpoints.complaints.create, data),
+  update: (id, data) => api.put(endpoints.complaints.update(id), data),
+  delete: (id) => api.delete(endpoints.complaints.delete(id)),
 };
 
 export default api;
