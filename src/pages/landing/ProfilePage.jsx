@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MapPin, Users, Award, Home, TrendingUp, User } from "lucide-react";
+import { MapPin, Users, Home, TrendingUp, User } from "lucide-react";
 import { profileAPI, organizationAPI } from "../../utils/api";
 import { getImageUrl } from "../../utils/helpers";
 import DesaDaritMap from "../../components/common/DesaDaritMap";
@@ -35,7 +35,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="pt-32">
+    <div className="pt-20 md:pt-28">
       {/* Header Section */}
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
