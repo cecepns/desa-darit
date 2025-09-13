@@ -352,7 +352,7 @@ const ProfilePage = () => {
               >
                 {members.map((m, idx) => (
                   <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <div className="w-full h-28 md:h-64 bg-gradient-to-br from-slate-100 to-gray-200">
+                    <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-gray-200">
                       {m.image ? (
                         <img
                           src={getImageUrl(m.image)}
