@@ -229,7 +229,7 @@ const ProfilePage = () => {
               data-aos="fade-up"
               data-aos-delay="400"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-700 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <TrendingUp className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
@@ -352,7 +352,7 @@ const ProfilePage = () => {
               >
                 {members.map((m, idx) => (
                   <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                    <div className="w-full h-28 md:h-64 bg-gradient-to-br from-green-100 to-emerald-200">
+                    <div className="w-full h-28 md:h-64 bg-gradient-to-br from-slate-100 to-gray-200">
                       {m.image ? (
                         <img
                           src={getImageUrl(m.image)}

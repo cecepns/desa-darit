@@ -119,7 +119,7 @@ const HomePage = () => {
             ))}
           </Swiper>
         ) : (
-          <div className="relative bg-gradient-to-r from-primary-600 to-primary-800 text-white">
+          <div className="relative bg-gradient-to-r from-primary-700 to-primary-900 text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
               <h1 className="text-4xl lg:text-6xl font-bold mb-6">Selamat Datang di <span className="text-yellow-300">Desa Darit</span></h1>
               <p className="text-lg lg:text-2xl text-white/90 mb-8">Kecamatan Menyuke, Kabupaten Landak, Kalimantan Barat</p>
@@ -183,7 +183,7 @@ const HomePage = () => {
               data-aos="fade-up"
               data-aos-delay="400"
             >
-              <div className="w-12 h-12 bg-gradient-to-br from-green-600 to-emerald-500 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <div className="w-12 h-12 bg-gradient-to-br from-primary-700 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <TrendingUp className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
@@ -280,7 +280,7 @@ const HomePage = () => {
       </section>
 
       {/* Map Section */}
-      <section className="pt-24 pb-20 bg-gradient-to-br from-green-50 via-emerald-50 to-green-100">
+      <section className="pt-24 pb-20 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8" data-aos="fade-up">
             <h2 className="text-3xl lg:text-4xl font-bold text-primary-900 mb-3">
@@ -314,7 +314,7 @@ const HomePage = () => {
             >
               {members.map((m, idx) => (
                 <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                  <div className="w-full h-28 md:h-64 bg-gradient-to-br from-green-100 to-emerald-200">
+                  <div className="w-full h-28 md:h-64 bg-gradient-to-br from-slate-100 to-gray-200">
                     {m.image ? (
                       <img
                         src={getImageUrl(m.image)}
