@@ -76,7 +76,7 @@ export default function NewsPage() {
                   dangerouslySetInnerHTML={{ __html: n.excerpt }}
                 />
 
-                <span className="text-primary-600 font-medium inline-flex items-center">
+                <span className="text-primary-600 font-medium inline-flex mt-4 items-center">
                   Baca Selengkapnya <ArrowRight size={16} className="ml-1" />
                 </span> 
               </Link>
