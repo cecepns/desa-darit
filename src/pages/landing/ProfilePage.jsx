@@ -35,7 +35,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <div className="pt-20 md:pt-28">
+    <div className="pt-20 md:pt-24">
       {/* Header Section */}
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
