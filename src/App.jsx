@@ -13,6 +13,7 @@ import NewsDetailPage from './pages/landing/NewsDetailPage';
 import ShopPage from './pages/landing/ShopPage';
 import ShopDetailPage from './pages/landing/ShopDetailPage';
 import APBPage from './pages/landing/APBPage';
+import ComplaintsPage from './pages/landing/ComplaintsPage';
 
 // Admin Components
 import AdminLayout from './components/layout/AdminLayout';
@@ -57,6 +58,7 @@ function App() {
           <Route path="belanja" element={<ShopPage />} />
           <Route path="belanja/:id" element={<ShopDetailPage />} />
           <Route path="apb" element={<APBPage />} />
+          <Route path="pengaduan" element={<ComplaintsPage />} />
         </Route>
 
         {/* Admin Routes */}

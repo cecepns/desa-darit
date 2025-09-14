@@ -1,16 +1,14 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { Home, Newspaper, ShoppingBag, MessageSquare } from 'lucide-react';
-import { useState } from 'react';
-import ComplaintForm from '../common/ComplaintForm';
 
 const MobileTabBar = () => {
   const location = useLocation();
-  const [isComplaintFormOpen, setIsComplaintFormOpen] = useState(false);
 
   const tabs = [
     { to: '/', label: 'Beranda', Icon: Home, exact: true },
     { to: '/berita', label: 'Berita', Icon: Newspaper },
     { to: '/belanja', label: 'Belanja', Icon: ShoppingBag },
+    { to: '/pengaduan', label: 'Pengaduan', Icon: MessageSquare },
   ];
 
   const isActivePath = (to, exact) => {
@@ -44,33 +42,10 @@ const MobileTabBar = () => {
                   </li>
                 );
               })}
-              
-              {/* Complaint Button */}
-              <li>
-                <button
-                  onClick={() => setIsComplaintFormOpen(true)}
-                  className="flex flex-col items-center justify-center py-2.5 gap-1 w-full"
-                >
-                  <MessageSquare
-                    size={22}
-                    className="text-gray-500"
-                    strokeWidth={2}
-                  />
-                  <span className="text-xs text-gray-600">
-                    Pengaduan
-                  </span>
-                </button>
-              </li>
             </ul>
           </div>
         </div>
       </nav>
-
-      {/* Complaint Form Modal */}
-      <ComplaintForm 
-        isOpen={isComplaintFormOpen} 
-        onClose={() => setIsComplaintFormOpen(false)} 
-      />
     </>
   );
 };

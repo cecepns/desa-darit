@@ -76,9 +76,6 @@ const APBPage = () => {
     }).format(amount);
   };
 
-  const formatNumber = (num) => {
-    return new Intl.NumberFormat("id-ID").format(num);
-  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -118,7 +115,7 @@ const APBPage = () => {
   }
 
   return (
-    <div className="pt-20 md:pt-28 pb-12">
+    <div className="pt-20 md:pt-24 pb-12">
       <section className="bg-gradient-to-r from-primary-600 to-primary-800 text-white py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center" data-aos="fade-up">
@@ -140,35 +137,56 @@ const APBPage = () => {
               <Calendar className="h-5 w-5 mr-2" />
               Pilih Tahun Anggaran
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {years.map((year) => (
-                <button
-                  key={year.id}
-                  onClick={() => setSelectedYear(year)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    selectedYear?.id === year.id
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-gray-200 hover:border-gray-300"
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-gray-900">
-                      {year.year}
+            <div className="max-w-md">
+              <select
+                value={selectedYear?.id || ""}
+                onChange={(e) => {
+                  const yearId = parseInt(e.target.value);
+                  const year = years.find(y => y.id === yearId);
+                  setSelectedYear(year);
+                }}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white text-gray-900"
+              >
+                <option value="" disabled>
+                  Pilih tahun anggaran...
+                </option>
+                {years
+                  .sort((a, b) => b.year - a.year)
+                  .map((year) => (
+                    <option key={year.id} value={year.id}>
+                      {year.year} - {getStatusText(year.status)} - {formatCurrency(year.total_income)} / {formatCurrency(year.total_expenditure)}
+                    </option>
+                  ))}
+              </select>
+              {selectedYear && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-gray-900">
+                        Tahun {selectedYear.year}
+                      </span>
+                      <span
+                        className={`ml-2 inline-flex px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                          selectedYear.status
+                        )}`}
+                      >
+                        {getStatusText(selectedYear.status)}
+                      </span>
                     </div>
-                    <div
-                      className={`inline-flex px-2 py-1 rounded-full text-xs font-medium mt-2 ${getStatusColor(
-                        year.status
-                      )}`}
-                    >
-                      {getStatusText(year.status)}
-                    </div>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {formatCurrency(year.total_income)} /{" "}
-                      {formatCurrency(year.total_expenditure)}
+                    <div className="text-right">
+                      <div className="text-sm text-gray-600">
+                        <span className="text-green-600 font-medium">
+                          {formatCurrency(selectedYear.total_income)}
+                        </span>
+                        {" / "}
+                        <span className="text-red-600 font-medium">
+                          {formatCurrency(selectedYear.total_expenditure)}
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </button>
-              ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

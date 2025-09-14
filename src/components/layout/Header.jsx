@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
-import Logo from '../../assets/kemendesa.png';
+import Logo from '../../assets/logo.png';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,8 +12,9 @@ const Header = () => {
     { name: 'Profil Desa', href: '/profil' },
     { name: 'Infografis', href: '/infografis' },
     { name: 'Berita', href: '/berita' },
-    { name: 'Belanja', href: '/belanja' },
     { name: 'APB Desa', href: '/apb' },
+    { name: 'Belanja', href: '/belanja' },
+    { name: 'Pengaduan', href: '/pengaduan' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -24,7 +25,7 @@ const Header = () => {
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-3">
-            <img src={Logo} className="w-14 md:w-20 h-auto" />
+            <img src={Logo} className="w-14 md:w-18 h-auto" />
             <div className="">
               <h1 className="text-xl font-bold text-white drop-shadow-lg">Desa Darit</h1>
               <p className="text-xs text-white/80">Kec. Menyuke, Kab. Landak</p>
