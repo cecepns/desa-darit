@@ -199,8 +199,6 @@ BEGIN
     UPDATE apb_years 
     SET total_income = total_inc, total_expenditure = total_exp
     WHERE id = year_id;
-    
-    SELECT total_inc as total_income, total_exp as total_expenditure;
 END//
 DELIMITER ;
 

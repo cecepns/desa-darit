@@ -9,7 +9,10 @@ import {
   TrendingDown,
   DollarSign,
   Save,
-  X
+  X,
+  CheckCircle,
+  PlayCircle,
+  FileText
 } from 'lucide-react';
 
 const AdminAPBPage = () => {
@@ -24,6 +27,7 @@ const AdminAPBPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [formData, setFormData] = useState({});
+  const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
 
   useEffect(() => {
     fetchAPBData();
@@ -55,6 +59,37 @@ const AdminAPBPage = () => {
       console.error('Error fetching APB data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateYearTotals = async (yearId) => {
+    try {
+      // Calculate totals from current data
+      const totalIncome = incomeData.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0);
+      const totalExpenditure = expenditureData.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0);
+      
+      // Update the year in backend
+      await apbAPI.years.update(yearId, {
+        total_income: totalIncome,
+        total_expenditure: totalExpenditure
+      });
+      
+      // Update local state
+      setYears(years.map(year => 
+        year.id === yearId 
+          ? { ...year, total_income: totalIncome, total_expenditure: totalExpenditure }
+          : year
+      ));
+      
+      if (selectedYear && selectedYear.id === yearId) {
+        setSelectedYear({ 
+          ...selectedYear, 
+          total_income: totalIncome, 
+          total_expenditure: totalExpenditure 
+        });
+      }
+    } catch (error) {
+      console.error('Error updating year totals:', error);
     }
   };
 
@@ -98,6 +133,9 @@ const AdminAPBPage = () => {
       setIncomeData([...incomeData, response.data.data]);
       setShowForm(false);
       setFormData({});
+      
+      // Update year totals
+      await updateYearTotals(selectedYear.id);
     } catch (error) {
       console.error('Error creating income:', error);
     }
@@ -114,6 +152,9 @@ const AdminAPBPage = () => {
       setExpenditureData([...expenditureData, response.data.data]);
       setShowForm(false);
       setFormData({});
+      
+      // Update year totals
+      await updateYearTotals(selectedYear.id);
     } catch (error) {
       console.error('Error creating expenditure:', error);
     }
@@ -128,6 +169,9 @@ const AdminAPBPage = () => {
       setShowForm(false);
       setEditingItem(null);
       setFormData({});
+      
+      // Update year totals
+      await updateYearTotals(selectedYear.id);
     } catch (error) {
       console.error('Error updating income:', error);
     }
@@ -142,6 +186,9 @@ const AdminAPBPage = () => {
       setShowForm(false);
       setEditingItem(null);
       setFormData({});
+      
+      // Update year totals
+      await updateYearTotals(selectedYear.id);
     } catch (error) {
       console.error('Error updating expenditure:', error);
     }
@@ -152,6 +199,9 @@ const AdminAPBPage = () => {
       try {
         await apbAPI.income.delete(id);
         setIncomeData(incomeData.filter(item => item.id !== id));
+        
+        // Update year totals
+        await updateYearTotals(selectedYear.id);
       } catch (error) {
         console.error('Error deleting income:', error);
       }
@@ -163,9 +213,103 @@ const AdminAPBPage = () => {
       try {
         await apbAPI.expenditure.delete(id);
         setExpenditureData(expenditureData.filter(item => item.id !== id));
+        
+        // Update year totals
+        await updateYearTotals(selectedYear.id);
       } catch (error) {
         console.error('Error deleting expenditure:', error);
       }
+    }
+  };
+
+  const handleDeleteYear = async (yearId) => {
+    if (window.confirm('Apakah Anda yakin ingin menghapus tahun anggaran ini? Semua data pendapatan dan belanja pada tahun ini juga akan dihapus.')) {
+      try {
+        await apbAPI.years.delete(yearId);
+        const updatedYears = years.filter(year => year.id !== yearId);
+        setYears(updatedYears);
+        
+        // If the deleted year was selected, select the first available year or null
+        if (selectedYear && selectedYear.id === yearId) {
+          if (updatedYears.length > 0) {
+            setSelectedYear(updatedYears[0]);
+          } else {
+            setSelectedYear(null);
+            setIncomeData([]);
+            setExpenditureData([]);
+          }
+        }
+      } catch (error) {
+        console.error('Error deleting year:', error);
+        alert('Gagal menghapus tahun anggaran. Silakan coba lagi.');
+      }
+    }
+  };
+
+  const handleUpdateYearStatus = async (yearId, newStatus) => {
+    try {
+      const yearToUpdate = years.find(year => year.id === yearId);
+      if (!yearToUpdate) return;
+
+      // Validation rules
+      if (newStatus === 'approved' && yearToUpdate.status !== 'draft') {
+        showNotification('Hanya tahun anggaran dengan status Draft yang dapat disetujui', 'error');
+        return;
+      }
+      
+      if (newStatus === 'active') {
+        if (yearToUpdate.status !== 'approved') {
+          showNotification('Hanya tahun anggaran dengan status Disetujui yang dapat diaktifkan', 'error');
+          return;
+        }
+        
+        // Check if there's already an active year
+        const activeYear = years.find(year => year.status === 'active' && year.id !== yearId);
+        if (activeYear) {
+          if (!window.confirm(`Tahun anggaran ${activeYear.year} sedang aktif. Apakah Anda yakin ingin menggantinya dengan tahun ${yearToUpdate.year}?`)) {
+            return;
+          }
+        }
+      }
+
+      let response;
+      // Use special activate endpoint for better handling of active year conflicts
+      if (newStatus === 'active') {
+        response = await apbAPI.years.activate(yearId, { force: true });
+      } else {
+        response = await apbAPI.years.update(yearId, {
+          ...yearToUpdate,
+          status: newStatus
+        });
+      }
+
+      // Update the years list
+      const updatedYears = years.map(year => 
+        year.id === yearId ? { ...year, status: newStatus } : year
+      );
+      
+      // If activating, also update any deactivated year
+      if (newStatus === 'active' && response.data?.deactivated) {
+        const deactivatedYear = response.data.deactivated;
+        const finalYears = updatedYears.map(year => 
+          year.id === deactivatedYear.id ? { ...year, status: 'approved' } : year
+        );
+        setYears(finalYears);
+      } else {
+        setYears(updatedYears);
+      }
+
+      // Update selected year if it's the one being updated
+      if (selectedYear && selectedYear.id === yearId) {
+        setSelectedYear({ ...selectedYear, status: newStatus });
+      }
+
+      // Show success message
+      const statusText = getStatusText(newStatus);
+      showNotification(`Status tahun anggaran ${yearToUpdate.year} berhasil diubah menjadi ${statusText}`, 'success');
+    } catch (error) {
+      console.error('Error updating year status:', error);
+      showNotification('Gagal mengubah status tahun anggaran. Silakan coba lagi.', 'error');
     }
   };
 
@@ -180,6 +324,13 @@ const AdminAPBPage = () => {
     setShowForm(false);
     setEditingItem(null);
     setFormData({});
+  };
+
+  const showNotification = (message, type = 'success') => {
+    setNotification({ show: true, message, type });
+    setTimeout(() => {
+      setNotification({ show: false, message: '', type: 'success' });
+    }, 3000);
   };
 
   const formatCurrency = (amount) => {
@@ -239,30 +390,130 @@ const AdminAPBPage = () => {
 
       {/* Year Selector */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <Calendar className="h-5 w-5 mr-2" />
-          Tahun Anggaran
-        </h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 flex items-center">
+            <Calendar className="h-5 w-5 mr-2" />
+            Tahun Anggaran
+          </h2>
+          <div className="text-sm text-gray-600">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-yellow-100 border border-yellow-300 rounded-full"></div>
+                <span>Draft</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded-full"></div>
+                <span>Disetujui</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="w-3 h-3 bg-green-100 border border-green-300 rounded-full"></div>
+                <span>Aktif</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {years.map((year) => (
-            <button
+            <div
               key={year.id}
-              onClick={() => setSelectedYear(year)}
-              className={`p-4 rounded-lg border-2 transition-all text-left ${
+              className={`relative p-4 rounded-lg border-2 transition-all ${
                 selectedYear?.id === year.id
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="text-xl font-bold text-gray-900">{year.year}</div>
-              <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium mt-2 ${getStatusColor(year.status)}`}>
-                {getStatusText(year.status)}
+              <button
+                onClick={() => setSelectedYear(year)}
+                className="w-full text-left"
+              >
+                <div className="text-xl font-bold text-gray-900">{year.year}</div>
+                <div className={`inline-flex px-2 py-1 rounded-full text-xs font-medium mt-2 ${getStatusColor(year.status)}`}>
+                  {getStatusText(year.status)}
+                </div>
+                <div className="text-sm text-gray-600 mt-1">
+                  {formatCurrency(year.total_income)} / {formatCurrency(year.total_expenditure)}
+                </div>
+              </button>
+              
+              {/* Action buttons */}
+              <div className="absolute top-2 right-2 flex gap-1">
+                {/* Status change buttons */}
+                {year.status === 'draft' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUpdateYearStatus(year.id, 'approved');
+                    }}
+                    className="p-1 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-full transition-colors"
+                    title="Setujui tahun anggaran"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                  </button>
+                )}
+                
+                {year.status === 'approved' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUpdateYearStatus(year.id, 'active');
+                    }}
+                    className="p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-full transition-colors"
+                    title="Aktifkan tahun anggaran"
+                  >
+                    <PlayCircle className="h-4 w-4" />
+                  </button>
+                )}
+                
+                {year.status === 'active' && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleUpdateYearStatus(year.id, 'draft');
+                    }}
+                    className="p-1 text-yellow-600 hover:text-yellow-800 hover:bg-yellow-50 rounded-full transition-colors"
+                    title="Kembalikan ke draft"
+                  >
+                    <FileText className="h-4 w-4" />
+                  </button>
+                )}
+                
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteYear(year.id);
+                  }}
+                  className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full transition-colors"
+                  title="Hapus tahun anggaran"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
               </div>
-              <div className="text-sm text-gray-600 mt-1">
-                {formatCurrency(year.total_income)} / {formatCurrency(year.total_expenditure)}
-              </div>
-            </button>
+            </div>
           ))}
+        </div>
+        
+        {/* Status Flow Information */}
+        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <h3 className="text-sm font-medium text-blue-900 mb-2">Alur Status Tahun Anggaran</h3>
+          <div className="flex items-center justify-between text-sm text-blue-800">
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Draft</span>
+              <span>→</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Disetujui</span>
+              <span>→</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">Aktif</span>
+            </div>
+          </div>
+          <div className="mt-2 text-xs text-blue-700">
+            • <strong>Draft:</strong> Tahun anggaran sedang dalam tahap penyusunan<br/>
+            • <strong>Disetujui:</strong> Tahun anggaran telah disetujui dan siap diaktifkan<br/>
+            • <strong>Aktif:</strong> Tahun anggaran sedang berjalan (hanya satu yang bisa aktif)
+          </div>
         </div>
       </div>
 
@@ -629,6 +880,36 @@ const AdminAPBPage = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Notification */}
+      {notification.show && (
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ${
+          notification.type === 'success' 
+            ? 'bg-green-100 border border-green-300 text-green-800' 
+            : 'bg-red-100 border border-red-300 text-red-800'
+        }`}>
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              {notification.type === 'success' ? (
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              ) : (
+                <X className="h-5 w-5 text-red-600" />
+              )}
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium">{notification.message}</p>
+            </div>
+            <div className="ml-auto pl-3">
+              <button
+                onClick={() => setNotification({ show: false, message: '', type: 'success' })}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
         </div>

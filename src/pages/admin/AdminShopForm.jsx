@@ -51,7 +51,7 @@ export default function AdminShopForm() {
 
   const handleUpload = async () => {
     if (!imageFile) return '';
-    const res = await shopAPI.uploadImage(imageFile);
+    const res = await shopAPI.uploadImage(imageFile, isEdit ? id : null);
     return res.data.filename;
   };
 

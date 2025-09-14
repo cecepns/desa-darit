@@ -39,7 +39,7 @@ export default function AdminBannerForm() {
 
   const handleUpload = async () => {
     if (!imageFile) return form.image;
-    const res = await bannersAPI.uploadImage(imageFile);
+    const res = await bannersAPI.uploadImage(imageFile, id || null);
     return res.data.filename;
   };
 
@@ -66,12 +66,12 @@ export default function AdminBannerForm() {
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm mb-1">Judul</label>
+            <label className="block text-sm mb-1">Judul (opsional)</label>
             <input
               className="w-full border rounded px-3 py-2"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              required
+              placeholder="Masukkan judul banner..."
             />
           </div>
           <div>

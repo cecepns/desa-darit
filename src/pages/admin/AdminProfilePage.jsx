@@ -107,7 +107,7 @@ export default function AdminProfilePage() {
 
   const handleMemberUpload = async () => {
     if (!memberImageFile) return "";
-    const res = await organizationAPI.uploadImage(memberImageFile);
+    const res = await organizationAPI.uploadImage(memberImageFile, memberForm.id || null);
     return res.data.filename;
   };
 

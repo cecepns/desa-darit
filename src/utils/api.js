@@ -123,7 +123,9 @@ export const endpoints = {
       create: '/apb/years',
       update: (id) => `/apb/years/${id}`,
       delete: (id) => `/apb/years/${id}`,
+      activate: (id) => `/apb/years/${id}/activate`,
     },
+    statusSummary: '/apb/status-summary',
     income: {
       getAll: '/apb/income',
       getByYear: (yearId) => `/apb/income/year/${yearId}`,
@@ -183,9 +185,12 @@ export const newsAPI = {
   create: (data) => api.post(endpoints.news.create, data),
   update: (id, data) => api.put(endpoints.news.update(id), data),
   delete: (id) => api.delete(endpoints.news.delete(id)),
-  uploadImage: (file) => {
+  uploadImage: (file, newsId = null) => {
     const formData = new FormData();
     formData.append('image', file);
+    if (newsId) {
+      formData.append('newsId', newsId);
+    }
     return api.post(endpoints.news.upload, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
@@ -216,9 +221,12 @@ export const shopAPI = {
   create: (data) => api.post(endpoints.shop.create, data),
   update: (id, data) => api.put(endpoints.shop.update(id), data),
   delete: (id) => api.delete(endpoints.shop.delete(id)),
-  uploadImage: (file) => {
+  uploadImage: (file, productId = null) => {
     const formData = new FormData();
     formData.append('image', file);
+    if (productId) {
+      formData.append('productId', productId);
+    }
     return api.post(endpoints.shop.upload, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
@@ -231,9 +239,12 @@ export const organizationAPI = {
   create: (data) => api.post(endpoints.organization.create, data),
   update: (id, data) => api.put(endpoints.organization.update(id), data),
   delete: (id) => api.delete(endpoints.organization.delete(id)),
-  uploadImage: (file) => {
+  uploadImage: (file, memberId = null) => {
     const formData = new FormData();
     formData.append('image', file);
+    if (memberId) {
+      formData.append('memberId', memberId);
+    }
     return api.post(endpoints.organization.upload, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
@@ -246,9 +257,12 @@ export const bannersAPI = {
   create: (data) => api.post(endpoints.banners.create, data),
   update: (id, data) => api.put(endpoints.banners.update(id), data),
   delete: (id) => api.delete(endpoints.banners.delete(id)),
-  uploadImage: (file) => {
+  uploadImage: (file, bannerId = null) => {
     const formData = new FormData();
     formData.append('image', file);
+    if (bannerId) {
+      formData.append('bannerId', bannerId);
+    }
     return api.post(endpoints.banners.upload, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
@@ -272,6 +286,7 @@ export const apbAPI = {
     create: (data) => api.post(endpoints.apb.years.create, data),
     update: (id, data) => api.put(endpoints.apb.years.update(id), data),
     delete: (id) => api.delete(endpoints.apb.years.delete(id)),
+    activate: (id, data = {}) => api.put(endpoints.apb.years.activate(id), data),
   },
   
   // Income
@@ -315,6 +330,9 @@ export const apbAPI = {
     getByYear: (yearId) => api.get(endpoints.apb.summary.getByYear(yearId)),
     getAll: () => api.get(endpoints.apb.summary.getAll),
   },
+  
+  // Status Summary
+  getStatusSummary: () => api.get(endpoints.apb.statusSummary),
 };
 
 export const complaintsAPI = {

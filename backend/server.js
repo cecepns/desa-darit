@@ -548,10 +548,24 @@ app.delete('/api/news/:id', authenticateToken, async (req, res) => {
 });
 
 // Upload news image
-app.post('/api/news/upload', authenticateToken, upload.single('image'), (req, res) => {
+app.post('/api/news/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const { newsId } = req.body; // Optional: newsId to replace existing image
+
+    // If newsId is provided, delete the old image
+    if (newsId) {
+      try {
+        const [existingRows] = await db.execute('SELECT image FROM news WHERE id = ?', [newsId]);
+        if (existingRows.length > 0 && existingRows[0].image) {
+          await fs.unlink(path.join(__dirname, 'uploads-desa-darit', existingRows[0].image));
+        }
+      } catch (err) {
+        console.error('Error deleting old news image:', err);
+      }
     }
 
     res.json({
@@ -818,10 +832,24 @@ app.delete('/api/shop/:id', authenticateToken, async (req, res) => {
 });
 
 // Upload shop product image
-app.post('/api/shop/upload', authenticateToken, upload.single('image'), (req, res) => {
+app.post('/api/shop/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file provided' });
+    }
+
+    const { productId } = req.body; // Optional: productId to replace existing image
+
+    // If productId is provided, delete the old image
+    if (productId) {
+      try {
+        const [existingRows] = await db.execute('SELECT image FROM shop_products WHERE id = ?', [productId]);
+        if (existingRows.length > 0 && existingRows[0].image) {
+          await fs.unlink(path.join(__dirname, 'uploads-desa-darit', existingRows[0].image));
+        }
+      } catch (err) {
+        console.error('Error deleting old shop product image:', err);
+      }
     }
 
     res.json({
@@ -942,11 +970,26 @@ app.delete('/api/organization/:id', authenticateToken, async (req, res) => {
 });
 
 // Upload member image
-app.post('/api/organization/upload', authenticateToken, upload.single('image'), (req, res) => {
+app.post('/api/organization/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No image file provided' });
     }
+
+    const { memberId } = req.body; // Optional: memberId to replace existing image
+
+    // If memberId is provided, delete the old image
+    if (memberId) {
+      try {
+        const [existingRows] = await db.execute('SELECT image FROM organization_members WHERE id = ?', [memberId]);
+        if (existingRows.length > 0 && existingRows[0].image) {
+          await fs.unlink(path.join(__dirname, 'uploads-desa-darit', existingRows[0].image));
+        }
+      } catch (err) {
+        console.error('Error deleting old organization member image:', err);
+      }
+    }
+
     res.json({
       message: 'Image uploaded successfully',
       filename: req.file.filename,
@@ -1040,10 +1083,9 @@ app.get('/api/banners/:id', async (req, res) => {
 app.post('/api/banners', authenticateToken, async (req, res) => {
   try {
     const { title, description, link, image, status, sort_order } = req.body;
-    if (!title) return res.status(400).json({ message: 'Title is required' });
     const [result] = await db.execute(
       'INSERT INTO banners (title, description, link, image, status, sort_order) VALUES (?, ?, ?, ?, ?, ?)',
-      [title, description || null, link || null, image || null, status || 'active', Number(sort_order) || 0]
+      [title || null, description || null, link || null, image || null, status || 'active', Number(sort_order) || 0]
     );
     res.status(201).json({ message: 'Banner created successfully', id: result.insertId });
   } catch (error) {
@@ -1060,7 +1102,7 @@ app.put('/api/banners/:id', authenticateToken, async (req, res) => {
     if (existingRows.length === 0) return res.status(404).json({ message: 'Banner not found' });
     await db.execute(
       'UPDATE banners SET title = ?, description = ?, link = ?, image = ?, status = ?, sort_order = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-      [title, description || null, link || null, image || null, status || 'active', Number(sort_order) || 0, bannerId]
+      [title || null, description || null, link || null, image || null, status || 'active', Number(sort_order) || 0, bannerId]
     );
     res.json({ message: 'Banner updated successfully' });
   } catch (error) {
@@ -1089,9 +1131,24 @@ app.delete('/api/banners/:id', authenticateToken, async (req, res) => {
 });
 
 // Upload banner image
-app.post('/api/banners/upload', authenticateToken, upload.single('image'), (req, res) => {
+app.post('/api/banners/upload', authenticateToken, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No image file provided' });
+
+    const { bannerId } = req.body; // Optional: bannerId to replace existing image
+
+    // If bannerId is provided, delete the old image
+    if (bannerId) {
+      try {
+        const [existingRows] = await db.execute('SELECT image FROM banners WHERE id = ?', [bannerId]);
+        if (existingRows.length > 0 && existingRows[0].image) {
+          await fs.unlink(path.join(__dirname, 'uploads-desa-darit', existingRows[0].image));
+        }
+      } catch (err) {
+        console.error('Error deleting old banner image:', err);
+      }
+    }
+
     res.json({ message: 'Image uploaded successfully', filename: req.file.filename, url: `/uploads/${req.file.filename}` });
   } catch (error) {
     handleDBError(error, res, 'Failed to upload image');
@@ -1211,9 +1268,42 @@ app.put('/api/apb/years/:id', authenticateToken, async (req, res) => {
     const { year, status, total_income, total_expenditure } = req.body;
     const yearId = req.params.id;
     
+    // Validate status value
+    if (status && !['draft', 'approved', 'active'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status. Must be draft, approved, or active' });
+    }
+    
     const [existingRows] = await db.execute('SELECT * FROM apb_years WHERE id = ?', [yearId]);
     if (existingRows.length === 0) return res.status(404).json({ message: 'APB year not found' });
     
+    const currentYear = existingRows[0];
+    
+    // Business logic validation for status changes
+    if (status && status !== currentYear.status) {
+      // Validate status transition rules
+      if (status === 'approved' && currentYear.status !== 'draft') {
+        return res.status(400).json({ message: 'Only draft years can be approved' });
+      }
+      
+      if (status === 'active') {
+        if (currentYear.status !== 'approved') {
+          return res.status(400).json({ message: 'Only approved years can be activated' });
+        }
+        
+        // Check if there's already an active year
+        const [activeYears] = await db.execute('SELECT id, year FROM apb_years WHERE status = "active" AND id != ?', [yearId]);
+        if (activeYears.length > 0) {
+          // Optionally, you can choose to automatically deactivate the current active year
+          // or require explicit confirmation from frontend
+          return res.status(400).json({ 
+            message: `Year ${activeYears[0].year} is currently active. Please deactivate it first or confirm the replacement.`,
+            conflictingYear: activeYears[0]
+          });
+        }
+      }
+    }
+    
+    // Update the year
     await db.execute(
       'UPDATE apb_years SET year = ?, status = ?, total_income = ?, total_expenditure = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
       [year, status, total_income, total_expenditure, yearId]
@@ -1222,6 +1312,86 @@ app.put('/api/apb/years/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'APB year updated successfully' });
   } catch (error) {
     handleDBError(error, res, 'Failed to update APB year');
+  }
+});
+
+// Activate APB year (with automatic deactivation of current active year)
+app.put('/api/apb/years/:id/activate', authenticateToken, async (req, res) => {
+  try {
+    const yearId = req.params.id;
+    const { force = false } = req.body; // Optional force parameter
+    
+    // Check if year exists
+    const [existingRows] = await db.execute('SELECT * FROM apb_years WHERE id = ?', [yearId]);
+    if (existingRows.length === 0) return res.status(404).json({ message: 'APB year not found' });
+    
+    const yearToActivate = existingRows[0];
+    
+    // Validate that the year can be activated
+    if (yearToActivate.status !== 'approved') {
+      return res.status(400).json({ message: 'Only approved years can be activated' });
+    }
+    
+    // Check if there's already an active year
+    const [activeYears] = await db.execute('SELECT id, year FROM apb_years WHERE status = "active" AND id != ?', [yearId]);
+    
+    // Start transaction to ensure data consistency
+    await db.beginTransaction();
+    
+    try {
+      // Deactivate current active year if exists
+      if (activeYears.length > 0) {
+        await db.execute('UPDATE apb_years SET status = "approved", updated_at = CURRENT_TIMESTAMP WHERE status = "active"');
+      }
+      
+      // Activate the selected year
+      await db.execute('UPDATE apb_years SET status = "active", updated_at = CURRENT_TIMESTAMP WHERE id = ?', [yearId]);
+      
+      await db.commit();
+      
+      res.json({ 
+        message: 'APB year activated successfully',
+        activated: yearToActivate,
+        deactivated: activeYears.length > 0 ? activeYears[0] : null
+      });
+    } catch (error) {
+      await db.rollback();
+      throw error;
+    }
+  } catch (error) {
+    handleDBError(error, res, 'Failed to activate APB year');
+  }
+});
+
+// Get APB status summary
+app.get('/api/apb/status-summary', async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT 
+        status,
+        COUNT(*) as count,
+        GROUP_CONCAT(year ORDER BY year DESC) as years
+      FROM apb_years 
+      GROUP BY status
+      ORDER BY FIELD(status, 'active', 'approved', 'draft')
+    `);
+    
+    const summary = {
+      active: { count: 0, years: [] },
+      approved: { count: 0, years: [] },
+      draft: { count: 0, years: [] }
+    };
+    
+    rows.forEach(row => {
+      summary[row.status] = {
+        count: row.count,
+        years: row.years ? row.years.split(',') : []
+      };
+    });
+    
+    res.json({ data: summary });
+  } catch (error) {
+    handleDBError(error, res, 'Failed to get APB status summary');
   }
 });
 
@@ -1424,7 +1594,16 @@ app.post('/api/apb/income', authenticateToken, async (req, res) => {
       [year_id, category_id, source, description, budgeted_amount, realized_amount || 0]
     );
     
-    res.status(201).json({ message: 'Income data created successfully', data: { id: result.insertId } });
+    // Get the complete data with category name
+    const [newIncome] = await db.execute(`
+      SELECT ai.*, aic.name as category_name, ay.year 
+      FROM apb_income ai 
+      JOIN apb_income_categories aic ON ai.category_id = aic.id 
+      JOIN apb_years ay ON ai.year_id = ay.id 
+      WHERE ai.id = ?
+    `, [result.insertId]);
+    
+    res.status(201).json({ message: 'Income data created successfully', data: newIncome[0] });
   } catch (error) {
     handleDBError(error, res, 'Failed to create income data');
   }
@@ -1444,7 +1623,16 @@ app.put('/api/apb/income/:id', authenticateToken, async (req, res) => {
       [year_id, category_id, source, description, budgeted_amount, realized_amount, incomeId]
     );
     
-    res.json({ message: 'Income data updated successfully' });
+    // Get the updated data with category name
+    const [updatedIncome] = await db.execute(`
+      SELECT ai.*, aic.name as category_name, ay.year 
+      FROM apb_income ai 
+      JOIN apb_income_categories aic ON ai.category_id = aic.id 
+      JOIN apb_years ay ON ai.year_id = ay.id 
+      WHERE ai.id = ?
+    `, [incomeId]);
+    
+    res.json({ message: 'Income data updated successfully', data: updatedIncome[0] });
   } catch (error) {
     handleDBError(error, res, 'Failed to update income data');
   }
@@ -1527,7 +1715,16 @@ app.post('/api/apb/expenditure', authenticateToken, async (req, res) => {
       [year_id, category_id, activity, description, budgeted_amount, realized_amount || 0]
     );
     
-    res.status(201).json({ message: 'Expenditure data created successfully', data: { id: result.insertId } });
+    // Get the complete data with category name
+    const [newExpenditure] = await db.execute(`
+      SELECT ae.*, aec.name as category_name, ay.year 
+      FROM apb_expenditure ae 
+      JOIN apb_expenditure_categories aec ON ae.category_id = aec.id 
+      JOIN apb_years ay ON ae.year_id = ay.id 
+      WHERE ae.id = ?
+    `, [result.insertId]);
+    
+    res.status(201).json({ message: 'Expenditure data created successfully', data: newExpenditure[0] });
   } catch (error) {
     handleDBError(error, res, 'Failed to create expenditure data');
   }
@@ -1547,7 +1744,16 @@ app.put('/api/apb/expenditure/:id', authenticateToken, async (req, res) => {
       [year_id, category_id, activity, description, budgeted_amount, realized_amount, expenditureId]
     );
     
-    res.json({ message: 'Expenditure data updated successfully' });
+    // Get the updated data with category name
+    const [updatedExpenditure] = await db.execute(`
+      SELECT ae.*, aec.name as category_name, ay.year 
+      FROM apb_expenditure ae 
+      JOIN apb_expenditure_categories aec ON ae.category_id = aec.id 
+      JOIN apb_years ay ON ae.year_id = ay.id 
+      WHERE ae.id = ?
+    `, [expenditureId]);
+    
+    res.json({ message: 'Expenditure data updated successfully', data: updatedExpenditure[0] });
   } catch (error) {
     handleDBError(error, res, 'Failed to update expenditure data');
   }

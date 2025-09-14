@@ -42,7 +42,7 @@ export default function AdminNewsForm() {
 
   const handleUpload = async () => {
     if (!imageFile) return '';
-    const res = await newsAPI.uploadImage(imageFile);
+    const res = await newsAPI.uploadImage(imageFile, isEdit ? id : null);
     return res.data.filename;
   };
 

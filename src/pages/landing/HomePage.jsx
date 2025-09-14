@@ -128,31 +128,40 @@ const HomePage = () => {
                 <div className="relative w-full h-full">
                   <img
                     src={b.image ? getImageUrl(b.image) : 'https://images.pexels.com/photos/1851149/pexels-photo-1851149.jpeg?auto=compress&cs=tinysrgb&w=1920&h=1080&fit=crop'}
-                    alt={b.title}
+                    alt={b.title || 'Banner Desa Darit'}
                     className="w-full h-full object-cover"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20" />
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
-                      <div className="max-w-3xl text-white" data-aos="fade-up">
-                        <h2 className="text-3xl lg:text-6xl font-bold mb-4">{b.title}</h2>
-                        {b.description && (
-                          <p className="text-base lg:text-lg text-white/90 mb-6" dangerouslySetInnerHTML={{ __html: b.description }} />
-                        )}
-                        <div className="flex gap-3">
-                          {b.link && (
-                            <a href={b.link} className="btn-primary inline-flex items-center" target="_blank" rel="noreferrer">
-                              Kunjungi <ArrowRight size={18} className="ml-2" />
-                            </a>
-                          )}
-                          <Link to="/profil" className="btn-secondary inline-flex items-center">
-                            Tentang Desa
-                            <ArrowRight size={18} className="ml-2" />
-                          </Link>
+                  {/* Only show overlay and content if there's title, description, or link */}
+                  {(b.title || b.description || b.link) && (
+                    <>
+                      <div className="absolute inset-0 bg-gradient-to-r from-black/40 to-black/20" />
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+                          <div className="max-w-3xl text-white" data-aos="fade-up">
+                            {b.title && (
+                              <h2 className="text-3xl lg:text-6xl font-bold mb-4">{b.title}</h2>
+                            )}
+                            {b.description && (
+                              <p className="text-base lg:text-lg text-white/90 mb-6" dangerouslySetInnerHTML={{ __html: b.description }} />
+                            )}
+                            {(b.link || b.title || b.description) && (
+                              <div className="flex gap-3">
+                                {b.link && (
+                                  <a href={b.link} className="btn-primary inline-flex items-center" target="_blank" rel="noreferrer">
+                                    Kunjungi <ArrowRight size={18} className="ml-2" />
+                                  </a>
+                                )}
+                                <Link to="/profil" className="btn-secondary inline-flex items-center">
+                                  Tentang Desa
+                                  <ArrowRight size={18} className="ml-2" />
+                                </Link>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </div>
               </SwiperSlide>
             ))}
