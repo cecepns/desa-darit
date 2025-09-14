@@ -71,8 +71,8 @@ const HomePage = () => {
               apbAPI.expenditure.getByYear(currentYearData.id),
             ]);
             
-            const incomeTotal = incomeRes.data.data?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
-            const expenditureTotal = expenditureRes.data.data?.reduce((sum, item) => sum + (item.amount || 0), 0) || 0;
+            const incomeTotal = incomeRes.data.data?.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0) || 0;
+            const expenditureTotal = expenditureRes.data.data?.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0) || 0;
             
             setApbData({
               year: currentYear,
