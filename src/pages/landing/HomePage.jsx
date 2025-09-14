@@ -62,7 +62,14 @@ const HomePage = () => {
         // Get current year APB data
         const currentYear = new Date().getFullYear();
         const apbYears = apbYearsRes.data.data || [];
-        const currentYearData = apbYears.find(year => year.year === currentYear);
+        
+        // Try to find current year data first, then fallback to latest available year
+        let currentYearData = apbYears.find(year => year.year === currentYear);
+        
+        // If no data for current year, use the latest available year
+        if (!currentYearData && apbYears.length > 0) {
+          currentYearData = apbYears.sort((a, b) => b.year - a.year)[0];
+        }
         
         if (currentYearData) {
           try {
@@ -75,7 +82,7 @@ const HomePage = () => {
             const expenditureTotal = expenditureRes.data.data?.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0) || 0;
             
             setApbData({
-              year: currentYear,
+              year: currentYearData.year,
               incomeTotal,
               expenditureTotal,
             });
@@ -569,7 +576,7 @@ const HomePage = () => {
               <div className="bg-gradient-to-r from-primary-600 to-primary-700 rounded-2xl shadow-xl p-6 text-white">
                 <div className="text-center">
                   <h4 className="text-lg font-semibold mb-2">Ringkasan APB Desa {apbData.year}</h4>
-                  <div className="grid grid-cols-2 gap-4 text-center">
+                  <div className="grid md:grid-cols-2 gap-4 text-center">
                     <div>
                       <div className="text-2xl font-bold text-green-300">
                         {formatCurrency(apbData.incomeTotal)}
