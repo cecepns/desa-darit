@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { MapPin, Users, Home, TrendingUp, User } from "lucide-react";
 import { profileAPI, organizationAPI } from "../../utils/api";
 import { getImageUrl } from "../../utils/helpers";
-import DesaDaritMap from "../../components/common/DesaDaritMap";
 
 const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
@@ -68,9 +67,9 @@ const ProfilePage = () => {
                   <p>
                     Desa Darit adalah sebuah desa yang terletak di Kecamatan
                     Menyuke, Kabupaten Landak, Kalimantan Barat. Desa ini
-                    memiliki luas wilayah sekitar 25,5 Ha dengan jumlah
-                    penduduk kurang lebih 1.234 jiwa yang terdiri dari 456
-                    kepala keluarga.
+                    memiliki luas wilayah sekitar 25,5 Ha dengan jumlah penduduk
+                    kurang lebih 1.234 jiwa yang terdiri dari 456 kepala
+                    keluarga.
                   </p>
                 )}
               </div>
@@ -232,7 +231,9 @@ const ProfilePage = () => {
               <div className="w-12 h-12 bg-gradient-to-br from-primary-700 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <TrendingUp className="text-white" size={24} />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{profile?.dusun || "8"}</div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">
+                {profile?.dusun || "8"}
+              </div>
               <div className="text-gray-600 font-medium">Dusun</div>
             </div>
           </div>
@@ -311,28 +312,6 @@ const ProfilePage = () => {
         </div>
       </section>
 
-      {/* Map Section */}
-      <section className="pt-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8" data-aos="fade-up">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
-              Peta Desa Darit
-            </h2>
-            <p className="text-gray-600 max-w-2xl mx-auto">
-              Lokasi dan batas wilayah perkiraan. Akan diperbarui dengan data
-              resmi.
-            </p>
-          </div>
-          <div
-            data-aos="fade-up"
-            data-aos-delay="100"
-            className="rounded-lg overflow-hidden shadow"
-          >
-            <DesaDaritMap height="480px" />
-          </div>
-        </div>
-      </section>
-
       {/* Village Structure */}
       {(members.length > 0 || profile?.structure_image) && (
         <section className="py-20 bg-white">
@@ -345,13 +324,25 @@ const ProfilePage = () => {
                 Susunan pengurus dan perangkat Desa Darit
               </p>
             </div>
+            {profile?.structure_image && (
+              <div className="flex justify-center py-20" data-aos="zoom-in">
+                <img
+                  src={getImageUrl(profile.structure_image)}
+                  alt="Struktur Organisasi Desa Darit"
+                  className="max-w-full h-auto rounded-xl shadow-lg"
+                />
+              </div>
+            )}
             {members.length > 0 && (
               <div
                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-12"
                 data-aos="fade-up"
               >
                 {members.map((m, idx) => (
-                  <div key={m.id || idx} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                  <div
+                    key={m.id || idx}
+                    className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                  >
                     <div className="w-full h-64 bg-gradient-to-br from-slate-100 to-gray-200">
                       {m.image ? (
                         <img
@@ -369,24 +360,48 @@ const ProfilePage = () => {
                       <h4 className="text-sm md:text-xl font-semibold text-white font-bold text-center line-clamp-1 mb-2">
                         {m.name}
                       </h4>
-                      <p className="text-xs md:text-sm text-white/90 text-center">{m.position}</p>
+                      <p className="text-xs md:text-sm text-white/90 text-center">
+                        {m.position}
+                      </p>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-            {profile?.structure_image && (
-              <div className="flex justify-center" data-aos="zoom-in">
-                <img
-                  src={getImageUrl(profile.structure_image)}
-                  alt="Struktur Organisasi Desa Darit"
-                  className="max-w-full h-auto rounded-xl shadow-lg"
-                />
-              </div>
-            )}
           </div>
         </section>
       )}
+
+      {/* Map Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8" data-aos="fade-up">
+            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-3">
+              Peta Desa Darit
+            </h2>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+              Lokasi dan batas wilayah perkiraan. Akan diperbarui dengan data
+              resmi.
+            </p>
+          </div>
+          <div
+            data-aos="fade-up"
+            data-aos-delay="100"
+            className="rounded-lg overflow-hidden shadow"
+          >
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3989.8174774775844!2d109.32442731475447!3d-0.1507499996393!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e1d5b1b1b1b1b1b%3A0x1b1b1b1b1b1b1b1b!2sDesa%20Darit%2C%20Menyuke%2C%20Landak%20Regency%2C%20West%20Kalimantan!5e0!3m2!1sen!2sid!4v1642000000000!5m2!1sen!2sid"
+              width="100%" 
+              height="480" 
+              style={{ border: 0 }} 
+              allowFullScreen="" 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Peta Desa Darit"
+            ></iframe>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
