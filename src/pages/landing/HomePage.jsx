@@ -214,7 +214,7 @@ const HomePage = () => {
                 <MapPin className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">
-                {profile?.area || "25.5"} km²
+                {profile?.area || "25.5"} Ha
               </div>
               <div className="text-gray-600 font-medium">Luas Wilayah</div>
             </div>
@@ -241,7 +241,7 @@ const HomePage = () => {
               <div className="w-12 h-12 bg-gradient-to-br from-primary-700 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <TrendingUp className="text-white" size={24} />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">{profile?.dusun || "8"}</div>
               <div className="text-gray-600 font-medium">Dusun</div>
             </div>
           </div>
@@ -333,6 +333,67 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* Village Head Welcome Section */}
+      {(profile?.name_head_village || profile?.description_head_village) && (
+        <section className="py-20 bg-white section-pattern">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16" data-aos="fade-up">
+              <h2 className="text-3xl lg:text-4xl font-bold text-primary-900 mb-4">
+                Sambutan Kepala Desa
+              </h2>
+            </div>
+            
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-gradient-to-r from-primary-50 to-white rounded-2xl shadow-xl overflow-hidden" data-aos="fade-up" data-aos-delay="100">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8 lg:p-12">
+                  {/* Photo Section */}
+                  <div className="lg:col-span-1 flex justify-center" data-aos="fade-right" data-aos-delay="200">
+                    <div className="relative">
+                      {profile?.head_village_image ? (
+                        <div className="w-48 h-48 lg:w-56 lg:h-56 rounded-full overflow-hidden shadow-2xl border-4 border-white">
+                          <img
+                            src={getImageUrl(profile.head_village_image)}
+                            alt={profile.name_head_village || "Kepala Desa"}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-48 h-48 lg:w-56 lg:h-56 rounded-full bg-primary-100 flex items-center justify-center shadow-2xl border-4 border-white">
+                          <User className="text-primary-400" size={80} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Content Section */}
+                  <div className="lg:col-span-2 flex flex-col justify-center" data-aos="fade-left" data-aos-delay="300">
+                    {profile?.name_head_village && (
+                      <div className="text-center lg:text-left mb-6">
+                        <h3 className="text-2xl lg:text-3xl font-bold text-primary-900 mb-2">
+                          {profile.name_head_village}
+                        </h3>
+                        <p className="text-primary-600 font-medium text-lg">
+                          Kepala Desa Darit
+                        </p>
+                      </div>
+                    )}
+                    
+                    {profile?.description_head_village && (
+                      <div className="text-primary-700 leading-relaxed">
+                        <div 
+                          className="prose prose-lg max-w-none text-justify"
+                          dangerouslySetInnerHTML={{ __html: profile.description_head_village }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Map Section */}
       <section className="pt-24 pb-20 bg-gradient-to-br from-slate-50 via-gray-50 to-slate-100">

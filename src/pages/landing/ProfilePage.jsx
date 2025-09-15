@@ -68,7 +68,7 @@ const ProfilePage = () => {
                   <p>
                     Desa Darit adalah sebuah desa yang terletak di Kecamatan
                     Menyuke, Kabupaten Landak, Kalimantan Barat. Desa ini
-                    memiliki luas wilayah sekitar 25,5 km² dengan jumlah
+                    memiliki luas wilayah sekitar 25,5 Ha dengan jumlah
                     penduduk kurang lebih 1.234 jiwa yang terdiri dari 456
                     kepala keluarga.
                   </p>
@@ -219,7 +219,7 @@ const ProfilePage = () => {
                 <MapPin className="text-white" size={24} />
               </div>
               <div className="text-3xl font-bold text-gray-900 mb-2">
-                {profile?.area || "25.5"} km²
+                {profile?.area || "25.5"} Ha
               </div>
               <div className="text-gray-600 font-medium">Luas Wilayah</div>
             </div>
@@ -232,7 +232,7 @@ const ProfilePage = () => {
               <div className="w-12 h-12 bg-gradient-to-br from-primary-700 to-primary-600 rounded-lg flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <TrendingUp className="text-white" size={24} />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">8</div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">{profile?.dusun || "8"}</div>
               <div className="text-gray-600 font-medium">Dusun</div>
             </div>
           </div>

@@ -201,9 +201,29 @@ export const profileAPI = {
   get: () => api.get(endpoints.profile.get),
   update: (data) => api.put(endpoints.profile.update, data),
   uploadImage: (file, type) => {
+    console.log('profileAPI.uploadImage called with type:', type);
+    console.log('API Base URL:', BASE_URL);
+    console.log('Upload endpoint:', endpoints.profile.uploadImage);
+    
     const formData = new FormData();
     formData.append('image', file);
     formData.append('type', type);
+    
+    // Log the final URL being called
+    console.log('Final upload URL:', `${BASE_URL}${endpoints.profile.uploadImage}`);
+    
+    return api.post(endpoints.profile.uploadImage, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+  
+  // Alternative upload method for head_village_image using main_image endpoint
+  uploadHeadVillageImage: (file) => {
+    console.log('profileAPI.uploadHeadVillageImage called');
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('type', 'main_image'); // Use main_image type but we'll handle it differently
+    
     return api.post(endpoints.profile.uploadImage, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });

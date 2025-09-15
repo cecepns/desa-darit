@@ -29,11 +29,51 @@ const dbConfig = {
 
 let db;
 
-// Initialize database connection
+    // Initialize database connection
 const initDB = async () => {
   try {
     db = await mysql.createConnection(dbConfig);
     console.log('Database connected successfully');
+    
+    // Add dusun column to village_profile table if it doesn't exist
+    try {
+      await db.execute(`ALTER TABLE village_profile ADD COLUMN dusun INT DEFAULT 8`);
+      console.log('Added dusun column to village_profile table');
+    } catch (error) {
+      // Column probably already exists, ignore the error
+      if (!error.message.includes('Duplicate column name')) {
+        console.error('Error adding dusun column:', error);
+      }
+    }
+    
+    // Add village head fields to village_profile table if they don't exist
+    try {
+      await db.execute(`ALTER TABLE village_profile ADD COLUMN head_village_image VARCHAR(255) DEFAULT NULL`);
+      console.log('Added head_village_image column to village_profile table');
+    } catch (error) {
+      if (!error.message.includes('Duplicate column name')) {
+        console.error('Error adding head_village_image column:', error);
+      }
+    }
+    
+    try {
+      await db.execute(`ALTER TABLE village_profile ADD COLUMN name_head_village VARCHAR(255) DEFAULT NULL`);
+      console.log('Added name_head_village column to village_profile table');
+    } catch (error) {
+      if (!error.message.includes('Duplicate column name')) {
+        console.error('Error adding name_head_village column:', error);
+      }
+    }
+    
+    try {
+      await db.execute(`ALTER TABLE village_profile ADD COLUMN description_head_village TEXT DEFAULT NULL`);
+      console.log('Added description_head_village column to village_profile table');
+    } catch (error) {
+      if (!error.message.includes('Duplicate column name')) {
+        console.error('Error adding description_head_village column:', error);
+      }
+    }
+    
     // Ensure required tables exist
     await db.execute(`CREATE TABLE IF NOT EXISTS organization_members (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -303,13 +343,17 @@ app.get('/api/profile', async (req, res) => {
         area: '25.5',
         population: 1234,
         families: 456,
+        dusun: 8,
         north_border: 'Desa Sekayam',
         east_border: 'Desa Menyuke',
         south_border: 'Desa Sungai Raya',
         west_border: 'Desa Pahauman',
         main_image: null,
         structure_image: null,
-        map_image: null
+        map_image: null,
+        head_village_image: null,
+        name_head_village: null,
+        description_head_village: null
       });
     }
 
@@ -323,8 +367,9 @@ app.get('/api/profile', async (req, res) => {
 app.put('/api/profile', authenticateToken, async (req, res) => {
   try {
     const {
-      description, vision, mission, history, area, population, families,
-      north_border, east_border, south_border, west_border
+      description, vision, mission, history, area, population, families, dusun,
+      north_border, east_border, south_border, west_border,
+      head_village_image, name_head_village, description_head_village
     } = req.body;
 
     // Check if profile exists
@@ -334,11 +379,13 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
       // Insert new profile
       const [result] = await db.execute(
         `INSERT INTO village_profile 
-        (description, vision, mission, history, area, population, families, 
-         north_border, east_border, south_border, west_border) 
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [description, vision, mission, history, area, population, families,
-         north_border, east_border, south_border, west_border]
+        (description, vision, mission, history, area, population, families, dusun,
+         north_border, east_border, south_border, west_border,
+         head_village_image, name_head_village, description_head_village) 
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [description, vision, mission, history, area, population, families, dusun,
+         north_border, east_border, south_border, west_border,
+         head_village_image, name_head_village, description_head_village]
       );
       
       res.json({ message: 'Village profile created successfully', id: result.insertId });
@@ -347,11 +394,13 @@ app.put('/api/profile', authenticateToken, async (req, res) => {
       await db.execute(
         `UPDATE village_profile SET 
         description = ?, vision = ?, mission = ?, history = ?, area = ?, 
-        population = ?, families = ?, north_border = ?, east_border = ?, 
-        south_border = ?, west_border = ?, updated_at = CURRENT_TIMESTAMP
+        population = ?, families = ?, dusun = ?, north_border = ?, east_border = ?, 
+        south_border = ?, west_border = ?, head_village_image = ?, name_head_village = ?, description_head_village = ?,
+        updated_at = CURRENT_TIMESTAMP
         WHERE id = ?`,
-        [description, vision, mission, history, area, population, families,
-         north_border, east_border, south_border, west_border, existingRows[0].id]
+        [description, vision, mission, history, area, population, families, dusun,
+         north_border, east_border, south_border, west_border,
+         head_village_image, name_head_village, description_head_village, existingRows[0].id]
       );
       
       res.json({ message: 'Village profile updated successfully' });
@@ -368,10 +417,10 @@ app.post('/api/profile/upload', authenticateToken, upload.single('image'), async
       return res.status(400).json({ message: 'No image file provided' });
     }
 
-    const { type } = req.body; // main_image, structure_image, or map_image
+    const { type } = req.body; // main_image, structure_image, map_image, or head_village_image
     const filename = req.file.filename;
 
-    if (!['main_image', 'structure_image', 'map_image'].includes(type)) {
+    if (!['main_image', 'structure_image', 'map_image', 'head_village_image'].includes(type)) {
       return res.status(400).json({ message: 'Invalid image type' });
     }
 
@@ -379,7 +428,7 @@ app.post('/api/profile/upload', authenticateToken, upload.single('image'), async
     const [existingRows] = await db.execute('SELECT id FROM village_profile LIMIT 1');
     
     if (existingRows.length === 0) {
-      // Create default profile first
+      // Create default profile first  
       await db.execute(
         'INSERT INTO village_profile (description) VALUES (?)',
         ['Desa Darit']

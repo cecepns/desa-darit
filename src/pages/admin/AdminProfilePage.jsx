@@ -15,20 +15,25 @@ export default function AdminProfilePage() {
     area: "",
     population: "",
     families: "",
+    dusun: "",
     north_border: "",
     east_border: "",
     south_border: "",
     west_border: "",
+    name_head_village: "",
+    description_head_village: "",
   });
   const [imageFiles, setImageFiles] = useState({
     main_image: null,
     structure_image: null,
     map_image: null,
+    head_village_image: null,
   });
   const [imagePreviews, setImagePreviews] = useState({
     main_image: "",
     structure_image: "",
     map_image: "",
+    head_village_image: "",
   });
   const [saving, setSaving] = useState(false);
   const [members, setMembers] = useState([]);
@@ -72,13 +77,59 @@ export default function AdminProfilePage() {
     try {
       const file = imageFiles[type];
       if (!file) return alert("Pilih file terlebih dahulu");
+      
+      console.log("Uploading image with type:", type);
+      console.log("File:", file);
+      
+      // For head_village_image, try different approach if the server doesn't support it yet
+      if (type === 'head_village_image') {
+        try {
+          const res = await profileAPI.uploadImage(file, type);
+          const filename = res.data.filename;
+          setForm((f) => ({ ...f, [type]: filename }));
+          alert("Gambar berhasil diunggah");
+          return;
+        } catch (error) {
+          if (error.response?.data?.message === 'Invalid image type') {
+            // Fallback: use alternative upload method
+            console.log("Fallback: using alternative upload method for head_village_image");
+            const res = await profileAPI.uploadHeadVillageImage(file);
+            const filename = res.data.filename;
+            
+            // Manually update the head_village_image field in the form
+            setForm((f) => ({ ...f, head_village_image: filename }));
+            
+            // Also manually save to backend by updating the profile
+            try {
+              const updatedForm = {
+                ...form,
+                head_village_image: filename,
+                population: Number(form.population) || 0,
+                families: Number(form.families) || 0,
+                dusun: Number(form.dusun) || 0,
+                area: String(form.area || ""),
+              };
+              await profileAPI.update(updatedForm);
+              alert("Gambar kepala desa berhasil diunggah");
+              return;
+            } catch (updateError) {
+              console.error("Update error:", updateError);
+              alert("Gambar berhasil diupload tapi gagal menyimpan ke profil. Silakan simpan profil secara manual.");
+              return;
+            }
+          }
+          throw error;
+        }
+      }
+      
       const res = await profileAPI.uploadImage(file, type);
       const filename = res.data.filename;
       setForm((f) => ({ ...f, [type]: filename }));
       alert("Gambar berhasil diunggah");
     } catch (e) {
-      console.error(e);
-      alert("Gagal mengunggah gambar");
+      console.error("Upload error:", e);
+      console.error("Error response:", e.response?.data);
+      alert(`Gagal mengunggah gambar: ${e.response?.data?.message || e.message}`);
     }
   };
 
@@ -94,6 +145,7 @@ export default function AdminProfilePage() {
         ...form,
         population: Number(form.population) || 0,
         families: Number(form.families) || 0,
+        dusun: Number(form.dusun) || 0,
         area: String(form.area || ""),
       });
       alert("Tersimpan");
@@ -272,9 +324,9 @@ export default function AdminProfilePage() {
             />
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-sm mb-1">Luas (km²)</label>
+            <label className="block text-sm mb-1">Luas (Ha)</label>
             <input
               name="area"
               className="w-full border rounded px-3 py-2"
@@ -286,6 +338,7 @@ export default function AdminProfilePage() {
             <label className="block text-sm mb-1">Penduduk</label>
             <input
               name="population"
+              type="number"
               className="w-full border rounded px-3 py-2"
               value={form.population || ""}
               onChange={handleChange}
@@ -295,8 +348,19 @@ export default function AdminProfilePage() {
             <label className="block text-sm mb-1">Kepala Keluarga</label>
             <input
               name="families"
+              type="number"
               className="w-full border rounded px-3 py-2"
               value={form.families || ""}
+              onChange={handleChange}
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Jumlah Dusun</label>
+            <input
+              name="dusun"
+              type="number"
+              className="w-full border rounded px-3 py-2"
+              value={form.dusun || ""}
               onChange={handleChange}
             />
           </div>
@@ -396,6 +460,70 @@ export default function AdminProfilePage() {
           </button>
         </div>
       </form>
+
+      <div className="mt-10">
+        <h2 className="text-lg font-semibold mb-4">Sambutan Kepala Desa</h2>
+        <div className="space-y-4 p-6 border rounded-lg bg-gray-50">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm mb-1">Nama Kepala Desa</label>
+              <input
+                name="name_head_village"
+                className="w-full border rounded px-3 py-2"
+                value={form.name_head_village || ""}
+                onChange={handleChange}
+                placeholder="Masukkan nama kepala desa"
+              />
+            </div>
+            <div className="card p-4">
+              <label className="block text-sm mb-2 font-medium">Foto Kepala Desa</label>
+              <div className="w-full h-40 bg-gray-100 rounded flex items-center justify-center overflow-hidden mb-3">
+                {imagePreviews.head_village_image || form.head_village_image ? (
+                  <img
+                    src={imagePreviews.head_village_image || getImageUrl(form.head_village_image)}
+                    alt="Head Village"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-gray-400">Tidak ada gambar</span>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleProfileImageChange("head_village_image", e.target.files?.[0] || null)}
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  className="px-3 py-1 bg-primary-600 text-white rounded"
+                  onClick={() => handleProfileImageUpload("head_village_image")}
+                >
+                  Upload
+                </button>
+              </div>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Sambutan Kepala Desa</label>
+            <ReactQuill
+              theme="snow"
+              value={form.description_head_village || ""}
+              onChange={(value) => handleQuillChange("description_head_village", value)}
+              style={{ minHeight: "150px" }}
+              modules={{
+                toolbar: [
+                  [{ 'header': [1, 2, false] }],
+                  ['bold', 'italic', 'underline', 'strike'],
+                  [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                  ['link'],
+                  ['clean']
+                ],
+              }}
+            />
+          </div>
+        </div>
+      </div>
 
       <div className="mt-10">
         <h2 className="text-lg font-semibold mb-4">Struktur Organisasi</h2>
