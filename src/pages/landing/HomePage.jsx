@@ -72,19 +72,32 @@ const HomePage = () => {
         
         if (currentYearData) {
           try {
-            const [incomeRes, expenditureRes] = await Promise.all([
-              apbAPI.income.getByYear(currentYearData.id),
-              apbAPI.expenditure.getByYear(currentYearData.id),
-            ]);
+            // Use summary API to get calculated totals
+            const summaryRes = await apbAPI.summary.getAll();
             
-            const incomeTotal = incomeRes.data.data?.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0) || 0;
-            const expenditureTotal = expenditureRes.data.data?.reduce((sum, item) => sum + (item.budgeted_amount || 0), 0) || 0;
+            // Find the current year data from summary
+            const currentYearSummary = summaryRes.data.data?.find(
+              item => item.year === currentYearData.year
+            );
             
-            setApbData({
-              year: currentYearData.year,
-              incomeTotal,
-              expenditureTotal,
-            });
+            if (currentYearSummary) {
+              // Convert string amounts to numbers
+              const incomeTotal = parseFloat(currentYearSummary.total_income || 0);
+              const expenditureTotal = parseFloat(currentYearSummary.total_expenditure || 0);
+              
+              setApbData({
+                year: currentYearData.year,
+                incomeTotal,
+                expenditureTotal,
+              });
+            } else {
+              // Fallback if no summary data found
+              setApbData({
+                year: currentYearData.year,
+                incomeTotal: 0,
+                expenditureTotal: 0,
+              });
+            }
           } catch (error) {
             console.error("Error fetching APB data:", error);
           }
