@@ -124,13 +124,13 @@ const LoginPage = () => {
         </form>
 
         {/* Demo Accounts */}
-        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+        {/* <div className="mt-8 p-4 bg-gray-50 rounded-lg">
           <h3 className="text-sm font-medium text-gray-700 mb-2">Akun Demo:</h3>
           <div className="text-xs text-gray-600 space-y-1">
             <div>Admin: <code className="bg-gray-200 px-1 rounded">admin</code> / <code className="bg-gray-200 px-1 rounded">admin123</code></div>
             <div>Editor: <code className="bg-gray-200 px-1 rounded">editor</code> / <code className="bg-gray-200 px-1 rounded">editor123</code></div>
           </div>
-        </div>
+        </div> */}
 
         {/* Footer */}
         <div className="text-center mt-8 pt-6 border-t border-gray-200">
