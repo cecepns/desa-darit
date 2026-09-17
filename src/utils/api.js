@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getStorageItem } from './helpers';
 
-const BASE_URL = 'https://api-inventory.isavralabel.com/desa-darit/api';
-export const BASE_IMAGE_URL = 'https://api-inventory.isavralabel.com/desa-darit/uploads';
+const BASE_URL = 'https://api.kingcreativestudio.my.id/desa-darit/api';
+export const BASE_IMAGE_URL = 'https://api.kingcreativestudio.my.id/desa-darit/uploads';
 
 // Create axios instance with default config
 const api = axios.create({
@@ -50,7 +50,7 @@ export const endpoints = {
     logout: '/auth/logout',
     me: '/auth/me',
   },
-  
+
   // News endpoints
   news: {
     getAll: '/news',
@@ -60,20 +60,20 @@ export const endpoints = {
     delete: (id) => `/news/${id}`,
     upload: '/news/upload',
   },
-  
+
   // Village Profile endpoints
   profile: {
     get: '/profile',
     update: '/profile',
     uploadImage: '/profile/upload',
   },
-  
+
   // Infographics endpoints
   infographics: {
     get: '/infographics',
     update: '/infographics',
   },
-  
+
   // Shop endpoints
   shop: {
     getAll: '/shop',
@@ -83,7 +83,7 @@ export const endpoints = {
     delete: (id) => `/shop/${id}`,
     upload: '/shop/upload',
   },
-  
+
   // Organization endpoints
   organization: {
     getAll: '/organization',
@@ -93,7 +93,7 @@ export const endpoints = {
     delete: (id) => `/organization/${id}`,
     upload: '/organization/upload',
   },
-  
+
   // Banners endpoints
   banners: {
     getAll: '/banners',
@@ -103,18 +103,18 @@ export const endpoints = {
     delete: (id) => `/banners/${id}`,
     upload: '/banners/upload',
   },
-  
+
   // Dashboard endpoints
   dashboard: {
     stats: '/dashboard/stats',
   },
-  
+
   // Contact settings endpoints
   contactSettings: {
     get: '/contact-settings',
     update: '/contact-settings',
   },
-  
+
   // APB Desa endpoints
   apb: {
     years: {
@@ -161,7 +161,7 @@ export const endpoints = {
       getAll: '/apb/summary',
     },
   },
-  
+
   // Complaints endpoints
   complaints: {
     getAll: '/complaints',
@@ -204,26 +204,26 @@ export const profileAPI = {
     console.log('profileAPI.uploadImage called with type:', type);
     console.log('API Base URL:', BASE_URL);
     console.log('Upload endpoint:', endpoints.profile.uploadImage);
-    
+
     const formData = new FormData();
     formData.append('image', file);
     formData.append('type', type);
-    
+
     // Log the final URL being called
     console.log('Final upload URL:', `${BASE_URL}${endpoints.profile.uploadImage}`);
-    
+
     return api.post(endpoints.profile.uploadImage, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  
+
   // Alternative upload method for head_village_image using main_image endpoint
   uploadHeadVillageImage: (file) => {
     console.log('profileAPI.uploadHeadVillageImage called');
     const formData = new FormData();
     formData.append('image', file);
     formData.append('type', 'main_image'); // Use main_image type but we'll handle it differently
-    
+
     return api.post(endpoints.profile.uploadImage, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
@@ -308,7 +308,7 @@ export const apbAPI = {
     delete: (id) => api.delete(endpoints.apb.years.delete(id)),
     activate: (id, data = {}) => api.put(endpoints.apb.years.activate(id), data),
   },
-  
+
   // Income
   income: {
     getAll: (params) => api.get(endpoints.apb.income.getAll, { params }),
@@ -318,7 +318,7 @@ export const apbAPI = {
     update: (id, data) => api.put(endpoints.apb.income.update(id), data),
     delete: (id) => api.delete(endpoints.apb.income.delete(id)),
   },
-  
+
   // Expenditure
   expenditure: {
     getAll: (params) => api.get(endpoints.apb.expenditure.getAll, { params }),
@@ -328,7 +328,7 @@ export const apbAPI = {
     update: (id, data) => api.put(endpoints.apb.expenditure.update(id), data),
     delete: (id) => api.delete(endpoints.apb.expenditure.delete(id)),
   },
-  
+
   // Categories
   categories: {
     income: {
@@ -344,13 +344,13 @@ export const apbAPI = {
       delete: (id) => api.delete(endpoints.apb.categories.expenditure.delete(id)),
     },
   },
-  
+
   // Summary
   summary: {
     getByYear: (yearId) => api.get(endpoints.apb.summary.getByYear(yearId)),
     getAll: () => api.get(endpoints.apb.summary.getAll),
   },
-  
+
   // Status Summary
   getStatusSummary: () => api.get(endpoints.apb.statusSummary),
 };
